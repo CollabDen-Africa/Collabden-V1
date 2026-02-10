@@ -1,0 +1,254 @@
+@import "tailwindcss";
+
+:root {
+  /* Primary Brand Colors */
+  --primary-blue: #204F99;
+  --primary-green: #73BF44;
+  --primary-white: #FFFFFF;
+  --primary-black: #000000;
+
+  /* Background Colors */
+  --bg-dark: #0a0a0a;
+  --bg-dark-alt: #0A0B0D;
+  --bg-dark-secondary: #0F0F0F;
+  --bg-dark-tertiary: #151515;
+  --bg-dark-card: #16181E;
+  --bg-dark-modal: #1F2531;
+  --bg-dark-panel: #201F24;
+  --bg-gray: #505050;
+  --bg-light-gray: #D9D9D9;
+  --bg-light-gray-alt: #D7D7D7;
+  --bg-off-white: #F4F2ED;
+
+  /* Transparency Colors */
+  --white-80: #FFFFFFCC;
+  --white-40: #FFFFFF66;
+  --white-20: #FFFFFF33;
+  --white-5: #FFFFFF0D;
+  --black-60: #00000099;
+  --black-50: #00000080;
+  --black-40: #00000066;
+  --black-30: #0000004D;
+
+  /* Accent Colors */
+  --accent-green-bright: #1EFD05;
+  --accent-green-success: #34A853;
+  --accent-red: #FF0404;
+  --accent-red-alt: #FF0000;
+  --accent-red-google: #EA4335;
+  --accent-red-youtube: #C5221F;
+  --accent-pink: #D924F9;
+  --accent-soft-red: #EFCFCF;
+  --accent-soft-pink: #FFD4F4;
+  --accent-soft-blue: #D6E6FF;
+  --accent-soft-green: #D9FBC4;
+  --accent-yellow: #FBBC04;
+  --accent-gray: #7D7D7F;
+
+  /* Social Media Colors */
+  --social-linkedin: #0076B2;
+  --social-facebook: #3D5A98;
+  --social-google-blue: #4285F4;
+  --social-blue-alt: #3771C8;
+
+  /* Gradients - as solid fallback values */
+  --gradient-green: linear-gradient(180deg, #73BF44 0%, #365920 100%);
+  --gradient-blue-green: linear-gradient(90.09deg, #204F99 0.08%, #73BF44 99.92%);
+  --gradient-blue-dark: linear-gradient(90deg, #204F99 1.96%, #0B1A33 99.7%);
+  --gradient-blue-dark-alt: linear-gradient(90deg, #204F99 0%, #0B1A33 100%);
+  --gradient-dark-panel: linear-gradient(180deg, #222222 0%, #242424 8.52%, #242424 83.04%, #201F24 100%);
+  --gradient-white-gray: linear-gradient(180deg, #FFFFFF 0%, #999999 100%);
+  --gradient-white-green: linear-gradient(180deg, #FFFFFF 0%, #73BF44 100%);
+  --gradient-whatsapp: linear-gradient(0deg, #1FAF38 -9900%, #60D669 100%);
+  --gradient-light: linear-gradient(0deg, #F9F9F9 -9900%, #FFFFFF 100%);
+  --gradient-white-gray-177: linear-gradient(177.94deg, #FFFFFF 3.29%, #999999 82.93%);
+  --gradient-white-gray-180: linear-gradient(180deg, #FFFFFF 5.4%, #999999 91.76%);
+
+  /* Legacy fallbacks */
+  --background: #000000;
+  --foreground: #FFFFFF;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary-blue: var(--primary-blue);
+  --color-primary-green: var(--primary-green);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base styles */
+html,
+body {
+  min-height: 100vh;
+  background: var(--bg-dark);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Background wrapper with circle pattern */
+.bg-pattern-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Large blue glowing circles - base style */
+.bg-circle {
+  position: absolute;
+  width: 368px;
+  height: 368px;
+  border-radius: 50%;
+  background: #204F99;
+  filter: blur(100px);
+  opacity: 1;
+}
+
+/* ========================================
+   CENTER CIRCLES - Fully visible 
+   ======================================== */
+
+/* First center circle - upper section */
+.bg-circle--center-1 {
+  top: 400px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Second center circle - middle section */
+.bg-circle--center-2 {
+  top: 1800px;
+  left: 40%;
+}
+
+/* Third center circle - lower section */
+.bg-circle--center-3 {
+  top: 3200px;
+  left: 285px;
+}
+
+/* Fourth center circle - bottom section */
+.bg-circle--center-4 {
+  top: 4600px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* ========================================
+   RIGHT EDGE CIRCLES - Half visible (pushed right)
+   ======================================== */
+
+/* Top right edge - half hidden */
+.bg-circle--right-1 {
+  top: 800px;
+  right: -284px;
+  /* Half of 568px pushed beyond edge */
+}
+
+/* Mid right edge */
+.bg-circle--right-2 {
+  top: 2400px;
+  right: -284px;
+}
+
+/* Lower right edge */
+.bg-circle--right-3 {
+  top: 4000px;
+  right: -284px;
+}
+
+/* ========================================
+   LEFT EDGE CIRCLES - Half visible (pushed left)
+   ======================================== */
+
+/* Top left edge - half hidden */
+.bg-circle--left-1 {
+  top: 1200px;
+  left: -284px;
+  /* Half of 568px pushed beyond edge */
+}
+
+/* Mid left edge */
+.bg-circle--left-2 {
+  top: 2800px;
+  left: -284px;
+}
+
+/* Lower left edge */
+.bg-circle--left-3 {
+  top: 4400px;
+  left: -284px;
+}
+
+/* Content wrapper to sit above background */
+.content-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+/* Utility classes for brand colors */
+.text-primary-blue {
+  color: var(--primary-blue);
+}
+
+.text-primary-green {
+  color: var(--primary-green);
+}
+
+.text-accent-red {
+  color: var(--accent-red);
+}
+
+.bg-primary-blue {
+  background-color: var(--primary-blue);
+}
+
+.bg-primary-green {
+  background-color: var(--primary-green);
+}
+
+.bg-gradient-green {
+  background: var(--gradient-green);
+}
+
+.bg-gradient-blue-green {
+  background: var(--gradient-blue-green);
+}
+
+.bg-gradient-blue-dark {
+  background: var(--gradient-blue-dark);
+}
+
+/* Button styles using brand colors */
+.btn-primary {
+  background: var(--gradient-green);
+  color: var(--primary-white);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: var(--primary-blue);
+  color: var(--primary-white);
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  filter: brightness(1.2);
+}
