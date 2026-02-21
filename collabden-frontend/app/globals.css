@@ -7,29 +7,6 @@
   --primary-white: #FFFFFF;
   --primary-black: #000000;
 
-  /* Background Colors */
-  --bg-dark: #0a0a0a;
-  --bg-dark-alt: #0A0B0D;
-  --bg-dark-secondary: #0F0F0F;
-  --bg-dark-tertiary: #151515;
-  --bg-dark-card: #16181E;
-  --bg-dark-modal: #1F2531;
-  --bg-dark-panel: #201F24;
-  --bg-gray: #505050;
-  --bg-light-gray: #D9D9D9;
-  --bg-light-gray-alt: #D7D7D7;
-  --bg-off-white: #F4F2ED;
-
-  /* Transparency Colors */
-  --white-80: #FFFFFFCC;
-  --white-40: #FFFFFF66;
-  --white-20: #FFFFFF33;
-  --white-5: #FFFFFF0D;
-  --black-60: #00000099;
-  --black-50: #00000080;
-  --black-40: #00000066;
-  --black-30: #0000004D;
-
   /* Accent Colors */
   --accent-green-bright: #1EFD05;
   --accent-green-success: #34A853;
@@ -45,25 +22,6 @@
   --accent-yellow: #FBBC04;
   --accent-gray: #7D7D7F;
 
-  /* Social Media Colors */
-  --social-linkedin: #0076B2;
-  --social-facebook: #3D5A98;
-  --social-google-blue: #4285F4;
-  --social-blue-alt: #3771C8;
-
-  /* Gradients - as solid fallback values */
-  --gradient-green: linear-gradient(180deg, #73BF44 0%, #365920 100%);
-  --gradient-blue-green: linear-gradient(90.09deg, #204F99 0.08%, #73BF44 99.92%);
-  --gradient-blue-dark: linear-gradient(90deg, #204F99 1.96%, #0B1A33 99.7%);
-  --gradient-blue-dark-alt: linear-gradient(90deg, #204F99 0%, #0B1A33 100%);
-  --gradient-dark-panel: linear-gradient(180deg, #222222 0%, #242424 8.52%, #242424 83.04%, #201F24 100%);
-  --gradient-white-gray: linear-gradient(180deg, #FFFFFF 0%, #999999 100%);
-  --gradient-white-green: linear-gradient(180deg, #FFFFFF 0%, #73BF44 100%);
-  --gradient-whatsapp: linear-gradient(0deg, #1FAF38 -9900%, #60D669 100%);
-  --gradient-light: linear-gradient(0deg, #F9F9F9 -9900%, #FFFFFF 100%);
-  --gradient-white-gray-177: linear-gradient(177.94deg, #FFFFFF 3.29%, #999999 82.93%);
-  --gradient-white-gray-180: linear-gradient(180deg, #FFFFFF 5.4%, #999999 91.76%);
-
   /* Legacy fallbacks */
   --background: #000000;
   --foreground: #FFFFFF;
@@ -74,7 +32,7 @@
   --color-foreground: var(--foreground);
   --color-primary-blue: var(--primary-blue);
   --color-primary-green: var(--primary-green);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-raleway);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -82,108 +40,9 @@
 html,
 body {
   min-height: 100vh;
-  background: var(--bg-dark);
+  background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
-
-/* Background wrapper with circle pattern */
-.bg-pattern-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-  z-index: 0;
-}
-
-/* Large blue glowing circles - base style */
-.bg-circle {
-  position: absolute;
-  width: 368px;
-  height: 368px;
-  border-radius: 50%;
-  background: #204F99;
-  filter: blur(100px);
-  opacity: 1;
-}
-
-/* ========================================
-   CENTER CIRCLES - Fully visible 
-   ======================================== */
-
-/* First center circle - upper section */
-.bg-circle--center-1 {
-  top: 400px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* Second center circle - middle section */
-.bg-circle--center-2 {
-  top: 1800px;
-  left: 40%;
-}
-
-/* Third center circle - lower section */
-.bg-circle--center-3 {
-  top: 3200px;
-  left: 285px;
-}
-
-/* Fourth center circle - bottom section */
-.bg-circle--center-4 {
-  top: 4600px;
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-/* ========================================
-   RIGHT EDGE CIRCLES - Half visible (pushed right)
-   ======================================== */
-
-/* Top right edge - half hidden */
-.bg-circle--right-1 {
-  top: 800px;
-  right: -284px;
-  /* Half of 568px pushed beyond edge */
-}
-
-/* Mid right edge */
-.bg-circle--right-2 {
-  top: 2400px;
-  right: -284px;
-}
-
-/* Lower right edge */
-.bg-circle--right-3 {
-  top: 4000px;
-  right: -284px;
-}
-
-/* ========================================
-   LEFT EDGE CIRCLES - Half visible (pushed left)
-   ======================================== */
-
-/* Top left edge - half hidden */
-.bg-circle--left-1 {
-  top: 1200px;
-  left: -284px;
-  /* Half of 568px pushed beyond edge */
-}
-
-/* Mid left edge */
-.bg-circle--left-2 {
-  top: 2800px;
-  left: -284px;
-}
-
-/* Lower left edge */
-.bg-circle--left-3 {
-  top: 4400px;
-  left: -284px;
+  font-family: var(--font-raleway), Arial, Helvetica, sans-serif;
 }
 
 /* Content wrapper to sit above background */
