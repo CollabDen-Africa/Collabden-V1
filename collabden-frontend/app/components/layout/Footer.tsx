@@ -7,10 +7,10 @@ import { motion } from 'framer-motion';
 
 const Footer = () => {
     const socialLinks = [
-        { Icon: RiInstagramFill, label: "Instagram", href: "https://instagram.com/collabdenafrica" },
-        { Icon: RiLinkedinBoxFill, label: "LinkedIn", href: "https://linkedin.com/company/collabdenafrica" },
+        { Icon: RiInstagramFill, label: "Instagram", href: "https://www.instagram.com/the.collabdenafrica?igsh=cnlrejZlanh2dzB4" },
+        { Icon: RiLinkedinBoxFill, label: "LinkedIn", href: "https://www.linkedin.com/company/collabden-africa" },
         { Icon: RiFacebookBoxFill, label: "Facebook", href: "https://facebook.com/collabdenafrica" },
-        { Icon: RiTwitterXFill, label: "X", href: "https://x.com/collabdenafrica" },
+        { Icon: RiTwitterXFill, label: "X", href: "https://x.com/Collabdenafrica" },
     ];
 
     const linkSections = [
