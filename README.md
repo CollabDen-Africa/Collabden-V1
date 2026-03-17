@@ -1,36 +1,79 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CollabDen 🎵
 
-## Getting Started
+**Where Africa's Music Professionals Collaborate, Get Paid, and Grow.**
 
-First, run the development server:
+CollabDen is a specialized collaboration platform designed specifically for the African music industry. It streamlines the creative process by bringing file sharing, communication, project management, and payments into a single, cohesive ecosystem.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
+
+## 🚀 Vision
+
+Stop juggling disconnected tools. CollabDen solves the industry's fragmentation by providing music professionals with a unified space to manage their creative workflow from start to finish.
+
+## ✨ Key Features
+
+- **Seamless Collaboration**: Share high-quality audio files and project assets effortlessly.
+- **Unified Communication**: Keep all project-related discussions in one place.
+- **Project Management**: Track milestones, deadlines, and creative tasks geared towards music production.
+- **Secure Payments**: Get paid for your work directly through the platform.
+- **African-Centric**: Built from the ground up to address the unique needs and challenges of the African music landscape.
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 15+](https://nextjs.org/) (App Router)
+- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/)
+- **Animations**: [Framer Motion](https://www.framer.com/motion/)
+- **Icons**: [React Icons](https://react-icons.github.io/react-icons/)
+- **Typography**: Raleway (Google Fonts)
+- **Language**: [TypeScript](https://www.typescriptlang.org/)
+
+## 📦 Getting Started
+
+### Prerequisites
+
+- Node.js 18.17.0 or later
+- npm (or yarn/pnpm/bun)
+
+### Installation
+
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/CollabDen-Africa/collabden-frontend.git
+   cd collabden-frontend
+   ```
+
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Run the development server:
+   ```bash
+   npm run dev
+   ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📁 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `app/`: Contains the Next.js App Router routes and page definitions.
+  - `about/`: About page.
+  - `waitlist/`: Early access waitlist page.
+  - `components/`: Reusable UI components.
+    - `homepage/`: Hero, Features, and How-it-works sections.
+    - `layout/`: Navbar, Footer, etc.
+    - `ui/`: Fundamental UI elements (Buttons, Cards, etc.)
+- `public/`: Static assets (Videos, Images, Fonts).
 
-## Learn More
+## 🌐 Deployment
 
-To learn more about Next.js, take a look at the following resources:
+The project is optimized for deployment on the [Vercel Platform](https://vercel.com).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Root Directory Note
+If deploying to Vercel, ensure the **Root Directory** in Project Settings is set to the repository root (or adjusted if nested) to avoid build errors.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 📄 License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+This project is private and proprietary. Copyright © 2026 CollabDen-Africa.
