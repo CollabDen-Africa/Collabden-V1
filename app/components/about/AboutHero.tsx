@@ -6,7 +6,7 @@ import { BsArrowUpRightCircleFill } from "react-icons/bs";
 
 const Hotspot = ({ x, y, label, position = "top" }: { x: string, y: string, label: string, position?: "top" | "bottom" | "left" | "right" }) => (
     <div
-        className="absolute z-30 flex flex-col items-center group cursor-pointer"
+        className="absolute z-30 hidden md:flex flex-col items-center group cursor-pointer"
         style={{ left: x, top: y }}
     >
         <div className="relative">
@@ -29,9 +29,9 @@ const Hotspot = ({ x, y, label, position = "top" }: { x: string, y: string, labe
 
 const AboutHero = () => {
     return (
-        <section className="relative w-full min-h-screen flex flex-col overflow-hidden pt-28 md:pt-32">
+        <section className="relative w-full flex flex-col overflow-hidden pt-28 md:pt-32">
             {/* COLLABDEN Header Area */}
-            <div className="w-full shrink-0 select-none pointer-events-none z-0 flex justify-center px-4 bg-linear-[45deg] from-black/10 from-25% via-blue-800/50 via-65% to-black/10 to-75%">
+            <div className="w-full shrink-0 select-none pointer-events-none z-0 flex justify-center px-4 bg-linear-to-r from-black/10 from-20% via-blue-800/50 via-50% to-black/10 to-80%">
                 <h1 className="w-full max-w-6xl h-auto md:h-50 font-bold text-center uppercase tracking-tighter leading-none mb-0">
                     <span className="text-[12vw] md:text-[190.476px] md:leading-50 bg-linear-to-b from-white from-[24.89%] to-[#122E5A]/21 to-[60.82%] bg-clip-text text-transparent">
                         COLLABDEN
@@ -40,7 +40,7 @@ const AboutHero = () => {
             </div>
 
             {/* Main Content Area - Card and Tagline */}
-            <div className="relative flex-1 -mt-5 md:-mt-13 w-full z-10 flex flex-col px-6 md:px-10 lg:px-20 pb-10 md:pb-20 max-w-7xl mx-auto">
+            <div className="relative flex-1 -mt-5 md:-mt-13 w-full z-10 flex flex-col px-6 md:px-10 lg:px-20 pb-4 md:pb-8 max-w-7xl mx-auto">
                 
                 {/* --- The Ambient Blue Glow --- */}
                 <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] md:w-[70%] h-[60%] bg-black opacity-80 blur-[120px] rounded-full pointer-events-none z-0" />
@@ -50,7 +50,7 @@ const AboutHero = () => {
                     initial={{ opacity: 0, y: 30 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
-                    className="relative z-10 w-full min-h-125 lg:min-h-140 lg:max-h-full md:min-h-0 md:aspect-video border border-primary-green/25 rounded-[30px] md:rounded-[40px] shadow-[0_0_80px_rgba(18,46,90,0.6)] overflow-hidden mb-8 md:mb-12"
+                    className="relative z-10 w-full min-h-125 lg:min-h-140 lg:max-h-full md:min-h-0 md:aspect-video  rounded-[30px] md:rounded-[40px] shadow-[0_0_80px_rgba(18,46,90,0.6)] overflow-hidden mb-8 md:mb-12"
                 >
                     {/* Background Image */}
                     <div 
@@ -86,19 +86,19 @@ const AboutHero = () => {
             />
             
             {/* Tagline */}
-            <div className="absolute bottom-6 left-6 md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-20 max-w-[80%] md:max-w-[50%] lg:max-w-[45%] pointer-events-none">
+            <div className="hidden md:block absolute md:bottom-10 md:left-10 lg:bottom-12 lg:left-12 z-20 md:max-w-[50%] lg:max-w-[45%] pointer-events-none">
                                     <h2 className="text-xl md:text-2xl lg:text-4xl font-semibold text-white tracking-tight leading-[1.1] drop-shadow-xl">
                                         Unifying music collaboration for creators In Africa
                                     </h2>
                                 </div>
 
                     {/* --- About Us Card --- */}
-                    <div className="absolute top-6 right-6 md:top-1/2 md:-translate-y-1/2 md:right-8 lg:max-h-137 rounded-2xl lg:right-10 z-20 w-[calc(100%-3rem)] sm:w-[320px] lg:w-95 bg-[#050B15]/80 backdrop-blur-xl border border-white/20 rounded-3x1 p-5 md:p-6 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
+                    <div className="absolute top-6 right-6 md:top-1/2 md:-translate-y-1/2 md:right-8 lg:max-h-137 rounded-2xl lg:right-10 z-20 sm:w-[320px] lg:w-95 bg-[#050B15]/80 backdrop-blur-xl border border-white/20 rounded-3x1 p-5 md:p-6 shadow-[0_0_40px_rgba(0,0,0,0.5)]">
                         {/* Title Section */}
                                                 <div className="flex justify-between items-center w-full gap-5 mb-5">
                                                     <h3 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mx-auto">About Us</h3>
-                                                    <span className="bg-white rounded-full flex max-w-fit max-h-fit min-w-fit min-h-fit  items-center justify-center group hover:bg-primary-green transition-colors duration-300 shrink-0">
-                                                        <BsArrowUpRightCircleFill className="w-6 h-16 md:w-8 md:h-8 lg:w-10 lg:h-10 text-primary-green transition-transform duration-300" />
+                                                    <span className="bg-white rounded-full flex w-4 h-4 md:w-6 md:h-6 lg:w-8 lg:h-8  items-center justify-center group hover:bg-primary-green transition-colors duration-300 shrink-0">
+                                                        <BsArrowUpRightCircleFill className="w-full h-full text-primary-green transition-transform duration-300" />
                                                     </span>
                                                 </div>
                         
@@ -120,7 +120,19 @@ const AboutHero = () => {
                                                 </div>
 
                     </div>
-                </motion.div>
+          </motion.div>
+          
+          {/* --- Mobile Tagline (Hidden on bigger screens) --- */}
+                          <motion.div 
+                              initial={{ opacity: 0, y: 20 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              transition={{ duration: 0.8, delay: 0.5 }}
+                              className="md:hidden mt-8 w-full px-2 relative z-10"
+                          >
+                              <h2 className="text-2xl font-semibold text-white tracking-tight leading-[1.2]">
+                                  Unifying music collaboration for creators In Africa
+                              </h2>
+                          </motion.div>
             </div>
         </section>
     );
