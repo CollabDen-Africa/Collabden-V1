@@ -31,26 +31,23 @@ export default function AuthLayout({
       // }}
       >
         {/* Top Navigation in Image Section */}
-        <div className="absolute top-10 left-10 right-10 flex justify-between items-center z-20">
+        <div className="absolute top-4 left-10 right-10 flex justify-between items-center z-20">
           {isSignup ? (
             <>
               <div className="flex items-center">
                 <Image
-                  src="/collabden-logo.png"
+                  src="/collabden-green.png"
                   alt="Collabden"
                   width={140}
                   height={35}
-                  className="opacity-10"
-                  style={{
-                    filter: "invert(74%) sepia(13%) saturate(1478%) hue-rotate(50deg) brightness(97%) contrast(85%)"
-                  }}
+                  className="opacity-95"
                 />
               </div>
 
               {/* Back Button with Hero Icon */}
               <Link
                 href={ROUTES.HOME}
-                className="group px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-white text-sm font-semibold flex items-center gap-3 hover:bg-white/20 transition-all border border-white/10"
+                className="group px-5 py-2.5 bg-white/20 backdrop-blur-md rounded-full text-white text-sm font-semibold flex items-center gap-3 hover:bg-white/30 transition-all"
               >
                 <span>Back to website</span>
                 <BsArrowUpRightCircleFill
@@ -63,7 +60,7 @@ export default function AuthLayout({
               {/* Back Button with Hero Icon */}
               <Link
                 href={ROUTES.HOME}
-                className="group px-5 py-2.5 bg-white/10 backdrop-blur-md rounded-full text-white text-sm font-semibold flex items-center gap-3 hover:bg-white/20 transition-all border border-white/10"
+                className="group px-5 py-2.5 bg-white/20 backdrop-blur-md rounded-full text-white text-sm font-semibold flex items-center gap-3 hover:bg-white/30 transition-all"
               >
                 <span>Back to website</span>
                 <BsArrowUpRightCircleFill
@@ -74,14 +71,11 @@ export default function AuthLayout({
               {/* Brand Logo - Colorized to Primary Green */}
               <div className="flex items-center">
                 <Image
-                  src="/collabden-logo.png"
+                  src="/collabden-green.png"
                   alt="Collabden"
                   width={140}
                   height={35}
                   className="opacity-95"
-                  style={{
-                    filter: "invert(74%) sepia(13%) saturate(1478%) hue-rotate(50deg) brightness(97%) contrast(85%)"
-                  }}
                 />
               </div>
             </>
@@ -90,39 +84,26 @@ export default function AuthLayout({
 
         {/* Ambient Dark Blue Glows (Spaced apart to frame the headphones) */}
         <div
-          className="absolute -top-20 -left-20 w-[500px] h-[500px] pointer-events-none opacity-40 blur-[120px]"
+          className="absolute -top-20 -right-20 w-[500px] h-[500px] pointer-events-none opacity-90 blur-[100px] z-0"
           style={{
-            background: "radial-gradient(circle, rgba(32, 79, 153, 0.4) 0%, transparent 70%)"
+            background: "radial-gradient(circle, rgba(37, 99, 235, 0.7) 0%, transparent 70%)"
           }}
         />
         <div
-          className="absolute -bottom-20 -right-20 w-[500px] h-[500px] pointer-events-none opacity-40 blur-[120px]"
+          className="absolute -bottom-20 -left-20 w-[500px] h-[500px] pointer-events-none opacity-90 blur-[100px] z-0"
           style={{
-            background: "radial-gradient(circle, rgba(32, 79, 153, 0.4) 0%, transparent 70%)"
+            background: "radial-gradient(circle, rgba(37, 99, 235, 0.7) 0%, transparent 70%)"
           }}
         />
 
-        {/* Dynamic Green Accent Glows */}
-        <div
-          className="absolute top-1/3 right-1/4 w-96 h-96 pointer-events-none opacity-40 blur-[100px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, var(--primary-green) 0%, transparent 70%)"
-          }}
-        />
-        <div
-          className="absolute bottom-1/4 left-1/4 w-80 h-80 pointer-events-none opacity-30 blur-[80px] rounded-full"
-          style={{
-            background: "radial-gradient(circle, var(--primary-green) 0%, transparent 70%)"
-          }}
-        />
 
         {/* Main Visual Asset */}
-        <div className="relative w-full h-full flex items-center justify-center z-10">
+        <div className="relative w-full h-full flex items-start justify-center z-10 pt-16 pb-6">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.8 }}
-            className="relative w-[95%] h-[95%]"
+            className="relative w-[110%] h-[110%]"
           >
             <Image
               src="/headphone.svg"
@@ -139,6 +120,17 @@ export default function AuthLayout({
 
   const formPanel = (
     <div className="w-full lg:w-[45%] flex flex-col justify-center items-center px-6 sm:px-12 lg:px-20 py-12">
+      {/* Mobile-only centered green logo */}
+      <div className="lg:hidden mb-12">
+        <Image
+          src="/collabden-green.png"
+          alt="Collabden"
+          width={180}
+          height={45}
+          priority
+          className="h-auto"
+        />
+      </div>
       <motion.div
         initial={{ opacity: 0, x: isSignup ? 40 : -40 }}
         animate={{ opacity: 1, x: 0 }}
