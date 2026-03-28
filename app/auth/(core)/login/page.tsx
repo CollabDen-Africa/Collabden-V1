@@ -1,0 +1,133 @@
+"use client";
+
+import { useState, useMemo } from "react";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
+import { FaEye, FaEyeSlash, FaGoogle, FaFacebook, FaApple } from "react-icons/fa";
+
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const isFormValid = useMemo(() => {
+    return email.trim().length > 0 && password.trim().length > 0;
+  }, [email, password]);
+
+  return (
+    <div className="space-y-8">
+      <div className="text-center space-y-3">
+        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+          Welcome Back!
+        </h1>
+        <p className="text-gray-500 font-medium text-base">
+          Continue collaborating with creators who get you
+        </p>
+      </div>
+
+      <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+        {/* Email Field */}
+        <div className="space-y-2">
+          <label className="text-sm font-semibold text-text-main block">
+            Email
+          </label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="johndoe@example.com"
+            className="w-full px-4 py-3 rounded-full border border-border-muted focus:border-primary-green focus:ring-4 focus:ring-(--primary-green)/10 transition-all outline-none text-text-main placeholder:text-text-muted font-medium bg-white"
+          />
+        </div>
+
+        {/* Password Field */}
+        <div className="space-y-2 relative">
+          <label className="text-sm font-semibold text-text-main block">
+            Password
+          </label>
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="............"
+              className="w-full px-4 py-3 rounded-full border border-border-muted focus:border-primary-green focus:ring-4 focus:ring-(--primary-green)/10 transition-all outline-none text-text-main placeholder:text-text-muted font-medium bg-white pr-12"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              {showPassword ? <FaEyeSlash size={18} /> : <FaEye size={18} />}
+            </button>
+          </div>
+          <div className="flex justify-start">
+            <Link
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
+              className="text-xs font-semibold hover:underline text-primary-green"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        </div>
+
+        {/* Log In Button */}
+        <button
+          type="submit"
+          disabled={!isFormValid}
+          className={`w-full py-4 text-white font-bold rounded-full transition-all cursor-pointer disabled:cursor-not-allowed 
+            ${isFormValid
+              ? "bg-primary-green shadow-btn-primary hover:shadow-btn-hover hover:-translate-y-1 hover:brightness-90 active:scale-[0.98]"
+              : "bg-primary-green/60 shadow-none"
+            }`}
+        >
+          Log In
+        </button>
+
+        {/* Divider */}
+        <div className="relative flex items-center justify-center py-2">
+          <div className="grow border-t border-border-light"></div>
+          <span className="shrink mx-4 text-xs font-medium text-text-main uppercase tracking-widest">
+            Or continue with
+          </span>
+          <div className="grow border-t border-border-light"></div>
+        </div>
+
+        {/* Social Logins */}
+        <div className="flex items-center justify-center gap-6">
+          <button
+            type="button"
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white text-black hover:bg-gray-50 transition-all cursor-pointer"
+          >
+            <FaApple size={24} />
+          </button>
+          <button
+            type="button"
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white hover:bg-gray-50 transition-all cursor-pointer"
+          >
+            <FaGoogle className="text-red-500" size={20} />
+          </button>
+          <button
+            type="button"
+            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white text-blue-600 hover:bg-gray-50 transition-all cursor-pointer"
+          >
+            <FaFacebook size={22} />
+          </button>
+        </div>
+
+        {/* Footer Link */}
+        <div className="text-center pt-2">
+          <p className="text-base font-semibold text-text-main">
+            Don&apos;t have an account?{" "}
+            <Link
+              href={ROUTES.AUTH.SIGNUP}
+              className="font-bold hover:underline text-primary-green"
+            >
+              Sign Up
+            </Link>
+          </p>
+        </div>
+      </form>
+    </div>
+  );
+}
