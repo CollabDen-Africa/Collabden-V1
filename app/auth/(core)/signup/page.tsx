@@ -2,26 +2,52 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
-import { FaEye, FaEyeSlash, FaGoogle, FaFacebook, FaApple, FaChevronDown } from "react-icons/fa";
-
-const ROLES = ["Producer", "Artist", "Manager", "Sound Engineer", "DJ", "Other"];
+import { FaEye, FaEyeSlash, FaGoogle } from "react-icons/fa";
 
 export default function SignupPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null); 
 
   const isFormValid = useMemo(() => {
     return (
+      name.trim().length >= 2 &&
       email.trim().length > 0 &&
-      password.trim().length >= 8 &&
-      role.length > 0 &&
+      password.trim().length > 0 &&
       agreedToTerms
     );
-  }, [email, password, role, agreedToTerms]);
+  }, [name, email, password, agreedToTerms]);
+  
+  const handleSubmit = async (e: React.FormEvent) => {
+      e.preventDefault();
+      if (!isFormValid) return;
+  
+      setLoading(true);
+      setError(null);
+  
+      try {
+        // The signup endpoint
+        const result = await authService.signUp({ name, email, password });
+  
+        if (result.user) {
+          // On success, redirect to the verify-email page
+          router.push(`/auth/verify-email?email=${encodeURIComponent(email)}`);
+        } else {
+          setError(result.message || "Signup failed. Please try again.");
+        }
+      } catch (err) {
+        setError("Network error.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
   return (
     <div className="space-y-6">
@@ -34,7 +60,20 @@ export default function SignupPage() {
         </p>
       </div>
 
-      <form className="space-y-5" onSubmit={(e) => e.preventDefault()}>
+      <form className="space-y-5" onSubmit={handleSubmit}>
+        {error && <p className="text-accent-red text-sm text-center font-medium">{error}</p>}
+        
+                {/* Name Field */}
+                <div className="space-y-1.5">
+                  <label className="text-sm font-semibold text-text-main block">Your Name</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="John Doe"
+                    className="w-full px-4 py-3 rounded-full border border-border-muted focus:border-primary-green focus:ring-4 focus:ring-(--primary-green)/10 transition-all outline-none text-text-main placeholder:text-text-muted font-medium bg-white"
+                  />
+                </div>
         {/* Email Field */}
         <div className="space-y-1.5">
           <label className="text-sm font-semibold text-text-main block">
@@ -75,32 +114,6 @@ export default function SignupPage() {
           </p>
         </div>
 
-        {/* Role Dropdown */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-semibold text-text-main block">
-            Your role
-          </label>
-          <div className="relative w-full">
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full px-4 py-3 rounded-full border border-border-muted focus:border-primary-green focus:ring-4 focus:ring-(--primary-green)/10 transition-all outline-none text-text-main placeholder:text-text-muted font-medium bg-white appearance-none cursor-pointer"
-            >
-              <option value="" disabled>
-                Select a role
-              </option>
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {r}
-                </option>
-              ))}
-            </select>
-            <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500">
-              <FaChevronDown size={14} />
-            </div>
-          </div>
-        </div>
-
         {/* Terms Checkbox */}
         <div
           className="flex items-start gap-3 cursor-pointer group select-none"
@@ -139,14 +152,14 @@ export default function SignupPage() {
         {/* Sign Up Button */}
         <button
           type="submit"
-          disabled={!isFormValid}
+          disabled={!isFormValid || loading}
           className={`w-full py-4 text-white font-bold rounded-full transition-all cursor-pointer disabled:cursor-not-allowed 
             ${isFormValid
               ? "bg-primary-green shadow-btn-primary hover:shadow-btn-hover hover:-translate-y-1 hover:brightness-90 active:scale-[0.98]"
               : "bg-primary-green/60 shadow-none"
             }`}
         >
-          Sign Up
+          {loading ? "Creating Account..." : "Sign Up"}
         </button>
 
         {/* Divider */}
@@ -162,21 +175,9 @@ export default function SignupPage() {
         <div className="flex items-center justify-center gap-6">
           <button
             type="button"
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white text-black hover:bg-gray-50 transition-all cursor-pointer"
-          >
-            <FaApple size={24} />
-          </button>
-          <button
-            type="button"
             className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white hover:bg-gray-50 transition-all cursor-pointer"
           >
             <FaGoogle className="text-red-500" size={20} />
-          </button>
-          <button
-            type="button"
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white text-blue-600 hover:bg-gray-50 transition-all cursor-pointer"
-          >
-            <FaFacebook size={22} />
           </button>
         </div>
 

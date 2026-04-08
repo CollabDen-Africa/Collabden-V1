@@ -97,21 +97,9 @@ export default function LoginPage() {
         <div className="flex items-center justify-center gap-6">
           <button
             type="button"
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white text-black hover:bg-gray-50 transition-all cursor-pointer"
-          >
-            <FaApple size={24} />
-          </button>
-          <button
-            type="button"
             className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white hover:bg-gray-50 transition-all cursor-pointer"
           >
             <FaGoogle className="text-red-500" size={20} />
-          </button>
-          <button
-            type="button"
-            className="w-12 h-12 flex items-center justify-center rounded-full border border-border-light bg-white text-blue-600 hover:bg-gray-50 transition-all cursor-pointer"
-          >
-            <FaFacebook size={22} />
           </button>
         </div>
 
