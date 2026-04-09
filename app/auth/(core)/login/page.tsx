@@ -13,6 +13,17 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const isUnverifiedError = useMemo(() => {
+    if (!authError) return false;
+    const lowerError = authError.toLowerCase();
+    return lowerError.includes("verify") || lowerError.includes("verified");
+  }, [authError]);
+
+  const handleGoogleLogin = () => {
+    // Redirect to the proxy route which handles Google initiation
+    window.location.href = "/api/auth/google";
+  };
+
   const isFormValid = useMemo(() => {
     return email.trim().length > 0 && password.trim().length > 0;
   }, [email, password]);
@@ -44,6 +55,16 @@ export default function LoginPage() {
       {authError && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-1">
           {authError}
+          {isUnverifiedError && (
+            <div className="mt-2">
+              <Link
+                href={`${ROUTES.AUTH.VERIFY_EMAIL}?email=${encodeURIComponent(email)}`}
+                className="text-primary-green font-bold underline hover:no-underline"
+              >
+                Click here to verify your account
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
@@ -125,7 +146,9 @@ export default function LoginPage() {
         <div className="space-y-4">
           <button
             type="button"
-            className="w-full py-3.5 flex items-center justify-center gap-3 rounded-full border border-border-light bg-white hover:bg-gray-50 transition-all cursor-pointer font-semibold text-text-main shadow-sm hover:shadow-md"
+            onClick={handleGoogleLogin}
+            disabled={authLoading}
+            className="w-full py-3.5 flex items-center justify-center gap-3 rounded-full border border-border-light bg-white hover:bg-gray-50 transition-all cursor-pointer font-semibold text-text-main shadow-sm hover:shadow-md disabled:opacity-50"
           >
             <FcGoogle size={27} />
             <span>Sign in with Google</span>

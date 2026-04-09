@@ -9,6 +9,8 @@ export const API_ENDPOINTS = {
     VERIFY: `${API_BASE_URL}/api/v1/user/verify`,
     FORGOT_PASSWORD: `${API_BASE_URL}/api/v1/user/forgot-password`,
     RESET_PASSWORD: `${API_BASE_URL}/api/v1/user/reset-password`,
+    GOOGLE_AUTH: `${API_BASE_URL}/api/v1/user/auth/google`,
+    GOOGLE_CALLBACK: `${API_BASE_URL}/api/v1/user/auth/google/callback`,
   },
 };
 
