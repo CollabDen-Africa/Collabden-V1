@@ -34,7 +34,8 @@ function VerifyEmailForm() {
             router.push(ROUTES.AUTH.ONBOARDING_SUCCESS);
         } catch (err: unknown) {
             if (err instanceof Error) {
-                setError(err.message || "Verification failed. Please check the code.");
+              setError(
+                err.message) 
             } else {
                 setError("Verification failed. Please check the code.");
             }
