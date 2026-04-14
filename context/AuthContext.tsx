@@ -100,8 +100,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isLoading = isInitializing || loginMutation.isPending || signupMutation.isPending || logoutMutation.isPending;
   
   const getErrorMessage = (err: unknown) => {
-    if (axios.isAxiosError(err)) {
-      return (err.response?.data as { error?: string })?.error || err.message;
+    if (axios.isAxiosError(err)) { 
+      return (
+        err.response?.data?.message || 
+        (err.response?.data as { error?: string })?.error || 
+        err.message
+      );
     }
     if (err instanceof Error) {
       return err.message;

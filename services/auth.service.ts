@@ -1,5 +1,5 @@
-import axiosInstance from '@/lib/axios';
-import { API_ENDPOINTS } from '@/constants/api-endpoints';
+import axiosInstance from "@/lib/axios";
+import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 export interface SignupPayload {
   email: string;
@@ -14,6 +14,7 @@ export interface LoginPayload {
 export interface VerifyPayload {
   email: string;
   code: string;
+  token?: string;
 }
 
 export interface ResetPasswordPayload {
@@ -32,7 +33,10 @@ const authService = {
       password: data.password,
     };
 
-    const response = await axiosInstance.post(API_ENDPOINTS.AUTH.SIGNUP, payload);
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.AUTH.SIGNUP,
+      payload,
+    );
     return response.data;
   },
 
@@ -57,15 +61,49 @@ const authService = {
    * Verify user email via OTP/code
    */
   verifyEmail: async (data: VerifyPayload) => {
-    const response = await axiosInstance.post(API_ENDPOINTS.AUTH.VERIFY, data);
+    try {
+      const payload = {
+      email: data.email,
+      verificationToken: data.code,
+    };
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.AUTH.VERIFY,
+      payload,
+    );
     return response.data;
-  },
+  } catch (err: any) {
+        const backendMessage = err.response?.data?.message || err.response?.data?.error || "Verification failed. Please check the code.";
+        throw new Error(backendMessage); 
+      }
+    },
 
-  /**
+    /**
+       * Resend verification email
+       */
+  resendVerification: async (email: string) => {
+        try {
+          const response = await axiosInstance.post(
+            API_ENDPOINTS.AUTH.RESEND_VERIFY, 
+            { email },
+          );
+          return response.data;
+        } catch (err: any) {
+              const backendMessage = 
+                err.response?.data?.message || 
+                err.response?.data?.error || 
+                "Failed to resend code.";
+              throw new Error(backendMessage); 
+            }
+   },
+        
+    /**
    * Request password reset link
    */
   forgotPassword: async (email: string) => {
-    const response = await axiosInstance.post(API_ENDPOINTS.AUTH.FORGOT_PASSWORD, { email });
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
+      { email },
+    );
     return response.data;
   },
 
@@ -73,7 +111,10 @@ const authService = {
    * Reset password with token
    */
   resetPassword: async (data: ResetPasswordPayload) => {
-    const response = await axiosInstance.post(API_ENDPOINTS.AUTH.RESET_PASSWORD, data);
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.AUTH.RESET_PASSWORD,
+      data,
+    );
     return response.data;
   },
 };
