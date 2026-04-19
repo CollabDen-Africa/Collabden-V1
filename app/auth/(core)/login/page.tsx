@@ -19,6 +19,16 @@ export default function LoginPage() {
     return lowerError.includes("verify") || lowerError.includes("verified");
   }, [authError]);
 
+  const isNotFoundError = useMemo(() => {
+    if (!authError) return false;
+    const lowerError = authError.toLowerCase();
+    // Broad match for "not found", "doesn't exist", "no account"
+    return lowerError.includes("not found") || 
+           lowerError.includes("exist") || 
+           lowerError.includes("no account") ||
+           lowerError.includes("not register");
+  }, [authError]);
+
   const handleGoogleLogin = () => {
     // Redirect to the proxy route which handles Google initiation
     window.location.href = "/api/auth/google";
@@ -62,6 +72,17 @@ export default function LoginPage() {
                 className="text-primary-green font-bold underline hover:no-underline"
               >
                 Click here to verify your account
+              </Link>
+            </div>
+          )}
+          {isNotFoundError && (
+            <div className="mt-2 text-red-600">
+              Don&apos;t have an account?{" "}
+              <Link
+                href={ROUTES.AUTH.SIGNUP}
+                className="text-primary-green font-bold underline hover:no-underline"
+              >
+                Sign up here
               </Link>
             </div>
           )}
