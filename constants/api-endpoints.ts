@@ -13,6 +13,20 @@ export const API_ENDPOINTS = {
     GOOGLE_AUTH: `${API_BASE_URL}/api/v1/user/auth/google`,
     GOOGLE_CALLBACK: `${API_BASE_URL}/api/v1/user/auth/google/callback`,
   },
+  DASHBOARD: {
+    ROOT: `${API_BASE_URL}/api/v1/dashboard`,
+  },
+  NOTIFICATIONS: {
+    LIST: `${API_BASE_URL}/api/v1/notifications`,
+    READ_ALL: `${API_BASE_URL}/api/v1/notifications/read-all`,
+    READ_ONE: (id: string) => `${API_BASE_URL}/api/v1/notifications/${id}/read`,
+  },
+  PROJECTS: {
+    LIST: `${API_BASE_URL}/api/v1/projects`,
+    CREATE: `${API_BASE_URL}/api/v1/projects`,
+    DETAIL: (id: string) => `${API_BASE_URL}/api/v1/projects/${id}`,
+    INVITE: (id: string) => `${API_BASE_URL}/api/v1/projects/${id}/invite`,
+  },
 };
 
 export interface API_RESPONSE<T = unknown> {

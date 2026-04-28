@@ -1,17 +1,90 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "../../components/ui/Button"
 import { HiPlus, HiOutlineClock } from "react-icons/hi";
 import { PROJECTS_DATA } from "@/lib/mockData";
+import projectService from "@/services/project.service";
+import type { Project } from "@/types/api.types";
+import { ROUTES } from "@/constants/routes";
 
+// Map backend status to UI styling
+const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
+  Active:    { color: "text-[#11EA9B]", bg: "bg-[#11EA9B]/10" },
+  Review:    { color: "text-[#E2C806]", bg: "bg-[#E2C806]/10" },
+  Completed: { color: "text-primary-green", bg: "bg-primary-green/10" },
+  Draft:     { color: "text-foreground/60", bg: "bg-foreground/10" },
+};
 
+const PROGRESS_COLORS: Record<string, string> = {
+  Active:    "bg-primary-green",
+  Review:    "bg-[#204F99]",
+  Completed: "bg-primary-green",
+  Draft:     "bg-foreground/30",
+};
+
+// Transform API project to match UI shape
+interface UIProject {
+  id: string | number;
+  title: string;
+  subtitle: string;
+  tracksProgress: string;
+  status: string;
+  statusColor: string;
+  statusBg: string;
+  progressPercent: number;
+  progressColor: string;
+  lastUpdated: string;
+  collaborators: string[];
+  totalCollab: number;
+}
+
+function mapApiToUI(project: Project): UIProject {
+  const status = project.status || "Active";
+  const style = STATUS_STYLES[status] || STATUS_STYLES.Active;
+  return {
+    id: project.id,
+    title: project.name,
+    subtitle: project.genre || "",
+    tracksProgress: `${project.progress || 0}% complete`,
+    status,
+    statusColor: style.color,
+    statusBg: style.bg,
+    progressPercent: project.progress || 0,
+    progressColor: PROGRESS_COLORS[status] || "bg-primary-green",
+    lastUpdated: project.updatedAt 
+      ? new Date(project.updatedAt).toLocaleDateString() 
+      : "Recently",
+    collaborators: (project.collaborators || []).map(c => c.avatarUrl || "/mock-profiles/small.png"),
+    totalCollab: (project.collaborators || []).length,
+  };
+}
 
 export default function ProjectsPage() {
   
   const router = useRouter();
+  const [projects, setProjects] = useState<UIProject[]>(PROJECTS_DATA);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        const data = await projectService.getAll();
+        if (data.length > 0) {
+          setProjects(data.map(mapApiToUI));
+        }
+        // If empty, keep mock data as fallback
+      } catch (err) {
+        console.warn("Projects API unavailable, using mock data:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, []);
   
   return (
     <div className="w-full max-w-[1200px] mx-auto flex flex-col gap-6 md:gap-8 pt-4 pb-10">
@@ -30,16 +103,23 @@ export default function ProjectsPage() {
                   variant="primary"
                   icon={HiPlus}
                   iconPosition="left"
-                  onClick={() => router.push("/projects/new-project")}
+                  onClick={() => router.push(ROUTES.PROJECTS.CREATE)}
                   className="shrink-0 h-[48px] px-6"
                 >
                   <span className="font-sans font-semibold text-[16px]">New Project</span>
                 </Button>
       </div>
 
+      {/* Loading State */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-6 h-6 border-2 border-foreground/20 border-t-primary-green rounded-full animate-spin" />
+        </div>
+      )}
+
       {/* PROJECTS GRID */}
       <div className="flex flex-col gap-6 w-full">
-        {PROJECTS_DATA.map((project) => (
+        {projects.map((project) => (
           
           /* Project Card */
           <div 
@@ -129,7 +209,10 @@ export default function ProjectsPage() {
                   </span>
                 </div>
                 
-                <button className="flex items-center gap-2 text-primary-green hover:brightness-110 transition-colors">
+                <button 
+                  onClick={() => router.push(`/projects/${project.id}`)}
+                  className="flex items-center gap-2 text-primary-green hover:brightness-110 transition-colors"
+                >
                   <span className="font-sans font-semibold text-[13px] sm:text-[14px]">Open Project</span>
                   <svg width="15" height="12" viewBox="0 0 15 12" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M1 6H13M13 6L8 1M13 6L8 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>

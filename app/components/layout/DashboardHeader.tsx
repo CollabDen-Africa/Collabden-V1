@@ -6,7 +6,7 @@ import Avatar from "../ui/Avatar";
 import OnboardingTooltip from "../ui/Tooltip"; 
 import { FiSearch } from "react-icons/fi";
 import { HiChevronDown } from "react-icons/hi";
-import { MOCK_NOTIFICATIONS } from "../../../lib/mockData"; 
+
 
 // User data structure
 export interface UserProfile {
@@ -82,13 +82,11 @@ export default function DashboardHeader({
               {/* Notification Bell Area - Anchor for Step 5 */}
               <div className={`transition-all duration-300 ${currentStep === 5 ? "relative z-[90]" : ""}`}>
                 <NotificationBell 
-                  notifications={MOCK_NOTIFICATIONS} 
-                  unreadCount={MOCK_NOTIFICATIONS.length}
                   isOpenExternally={isNotifOpen} 
                   onToggle={() => setIsNotifOpen(!isNotifOpen)}
                   currentStep={currentStep} 
-                                  setStep={setStep}
-                                  onSkip={onSkip}
+                  setStep={setStep}
+                  onSkip={onSkip}
                 />
                 
               </div>

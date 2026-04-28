@@ -4,20 +4,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { LuBell } from "react-icons/lu";
 import NotificationItem from '../dashboard/NotificationsItem'; 
 import OnboardingTooltip from './Tooltip'; 
-
-export interface NotificationData {
-  id: number;
-  user?: string;
-  action: string;
-  target?: string;
-  time: string;
-  type?: string; 
-  icon?: any; 
-}
+import notificationService from '@/services/notification.service';
+import type { Notification } from '@/types/api.types';
 
 interface NotificationBellProps {
-  notifications?: NotificationData[];
-  unreadCount?: number;
   isOpenExternally?: boolean;
   onToggle?: () => void;
   currentStep?: number; 
@@ -26,8 +16,6 @@ interface NotificationBellProps {
 }
 
 export default function NotificationBell({ 
-  notifications = [], 
-  unreadCount = 5, 
   isOpenExternally,
   onToggle,
   currentStep, 
@@ -36,10 +24,56 @@ export default function NotificationBell({
 }: NotificationBellProps) {
   
   const [internalOpen, setInternalOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isOpen = isOpenExternally !== undefined ? isOpenExternally : internalOpen;
   const setIsOpen = onToggle || setInternalOpen;
+
+  const unreadCount = notifications.filter(n => !n.isRead).length;
+
+  // Fetch notifications when dropdown opens
+  useEffect(() => {
+    if (isOpen && !hasFetched) {
+      fetchNotifications();
+    }
+  }, [isOpen, hasFetched]);
+
+  const fetchNotifications = async () => {
+    setIsLoading(true);
+    try {
+      const data = await notificationService.getAll();
+      setNotifications(data);
+      setHasFetched(true);
+    } catch (err) {
+      console.error('Failed to fetch notifications:', err);
+      // Fallback: keep empty — mock data can be restored here if needed
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMarkRead = async (id: string) => {
+    try {
+      await notificationService.markOneRead(id);
+      setNotifications(prev => 
+        prev.map(n => n.id === id ? { ...n, isRead: true } : n)
+      );
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await notificationService.markAllRead();
+      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+    } catch (err) {
+      console.error('Failed to mark all as read:', err);
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -83,19 +117,33 @@ export default function NotificationBell({
           </div>
 
           <div className="flex flex-col gap-[16px]">
-            {notifications.map((notif) => (
-              <NotificationItem key={notif.id} {...notif} />
-            ))}
-            {notifications.length === 0 && (
+            {isLoading ? (
+              <div className="flex items-center justify-center py-6">
+                <div className="w-5 h-5 border-2 border-foreground/20 border-t-primary-green rounded-full animate-spin" />
+              </div>
+            ) : notifications.length > 0 ? (
+              notifications.map((notif) => (
+                <NotificationItem 
+                  key={notif.id} 
+                  {...notif} 
+                  onMarkRead={handleMarkRead}
+                />
+              ))
+            ) : (
               <p className="text-foreground/40 text-sm text-center py-4 italic">
                 You're all caught up!
               </p>
             )}
           </div>
           
-          <button className="w-full text-center font-semibold text-[16px] leading-[19px] text-primary-green hover:opacity-80 transition-opacity">
-            View All Notifications
-          </button>
+          {unreadCount > 0 && (
+            <button 
+              onClick={handleMarkAllRead}
+              className="w-full text-center font-semibold text-[16px] leading-[19px] text-primary-green hover:opacity-80 transition-opacity"
+            >
+              Mark all as read
+            </button>
+          )}
 
           {/* STEP 5 ANCHOR */}
           {currentStep === 5 && (

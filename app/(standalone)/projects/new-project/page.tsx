@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { 
   HiOutlineChevronDown, 
   HiOutlineSearch, 
@@ -16,8 +17,11 @@ import DatePicker from "@/app/components/ui/DatePicker";
 import Avatar from "@/app/components/ui/Avatar";
 import Button from "@/app/components/ui/Button";
 import { PROJECT_GENRES, MOCK_COLLABORATORS } from "@/lib/mockData";
+import projectService from "@/services/project.service";
+import { ROUTES } from "@/constants/routes";
 
 export default function CreateProjectPage() {
+  const router = useRouter();
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
   
@@ -31,6 +35,9 @@ export default function CreateProjectPage() {
   const [selectedCollabs, setSelectedCollabs] = useState<string[]>([]);
 
   const [visibility, setVisibility] = useState<"Private" | "Public">("Private");
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const toggleCollaborator = (name: string) => {
     setSelectedCollabs(prev => 
@@ -59,7 +66,32 @@ export default function CreateProjectPage() {
             </p>
           </div>
 
-          <form className="flex flex-col gap-8" onSubmit={(e) => e.preventDefault()}>
+          <form className="flex flex-col gap-8" onSubmit={async (e) => {
+            e.preventDefault();
+            setSubmitError(null);
+
+            if (!projectName.trim() || !selectedGenre || !selectedDate) {
+              setSubmitError("Please fill in all required fields (name, genre, start date).");
+              return;
+            }
+
+            setIsSubmitting(true);
+            try {
+              await projectService.create({
+                name: projectName.trim(),
+                description: description.trim() || undefined,
+                genre: selectedGenre,
+                startDate: selectedDate.toISOString(),
+                visibility: visibility.toUpperCase() as "PUBLIC" | "PRIVATE",
+              });
+              router.push(ROUTES.PROJECTS.SUCCESS);
+            } catch (err: unknown) {
+              const message = err instanceof Error ? err.message : "Failed to create project";
+              setSubmitError(message);
+            } finally {
+              setIsSubmitting(false);
+            }
+          }}>
             
             {/* Project Name */}
             <div className="flex flex-col gap-4">
@@ -272,21 +304,37 @@ export default function CreateProjectPage() {
               </span>
             </div>
 
+            {/* Error Message */}
+            {submitError && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-[16px] text-sm font-medium">
+                {submitError}
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex items-center justify-end gap-4 mt-4 pt-8 border-t border-white/10">
               <Button 
                 type="button"
                 variant="ghost"
                 className="bg-white/10 hover:bg-white/20 !px-6 !py-2 !h-auto text-[14px] font-medium"
+                onClick={() => router.back()}
               >
                 Cancel
               </Button>
               <Button 
                 type="submit"
                 variant="primary"
+                disabled={isSubmitting}
                 className="border border-accent-soft-green !px-6 !py-2 !h-auto text-[14px] font-medium"
               >
-                Create project
+                {isSubmitting ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </div>
+                ) : (
+                  "Create project"
+                )}
               </Button>
             </div>
 
