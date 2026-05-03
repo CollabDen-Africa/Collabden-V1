@@ -3,18 +3,23 @@ import type {
   Project,
   CreateProjectPayload,
   InviteCollaboratorPayload,
-  ApiResponse,
 } from "@/types/api.types";
 
 const projectService = {
   /**
    * List all active projects for the authenticated user.
+   * Backend returns: { projects: [...], meta: {...} }
    */
   getAll: async (): Promise<Project[]> => {
-    const response = await localApi.get<ApiResponse<Project[]>>("/api/proxy/projects");
+    const response = await localApi.get("/api/proxy/projects");
     const raw = response.data;
+    // Backend returns { projects: [...], meta: {...} }
+    if (raw?.projects && Array.isArray(raw.projects)) return raw.projects;
+    // Fallback: direct array
     if (Array.isArray(raw)) return raw;
-    if (raw.data && Array.isArray(raw.data)) return raw.data;
+    // Fallback: wrapped in data
+    if (raw?.data?.projects) return raw.data.projects;
+    if (raw?.data && Array.isArray(raw.data)) return raw.data;
     return [];
   },
 
@@ -22,24 +27,27 @@ const projectService = {
    * Get project workspace details by ID.
    */
   getById: async (id: string): Promise<Project> => {
-    const response = await localApi.get<ApiResponse<Project>>(`/api/proxy/projects/${id}`);
-    return response.data.data || response.data as unknown as Project;
+    const response = await localApi.get(`/api/proxy/projects/${id}`);
+    const raw = response.data;
+    return raw?.project || raw?.data || raw as Project;
   },
 
   /**
    * Create a new project.
    */
   create: async (data: CreateProjectPayload): Promise<Project> => {
-    const response = await localApi.post<ApiResponse<Project>>("/api/proxy/projects", data);
-    return response.data.data || response.data as unknown as Project;
+    const response = await localApi.post("/api/proxy/projects", data);
+    const raw = response.data;
+    return raw?.project || raw?.data || raw as Project;
   },
 
   /**
    * Update project details.
    */
   update: async (id: string, data: Partial<CreateProjectPayload>): Promise<Project> => {
-    const response = await localApi.patch<ApiResponse<Project>>(`/api/proxy/projects/${id}`, data);
-    return response.data.data || response.data as unknown as Project;
+    const response = await localApi.patch(`/api/proxy/projects/${id}`, data);
+    const raw = response.data;
+    return raw?.project || raw?.data || raw as Project;
   },
 
   /**

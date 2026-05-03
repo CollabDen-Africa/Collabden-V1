@@ -27,23 +27,37 @@ export type ProjectVisibility = "PUBLIC" | "PRIVATE";
 export interface Project {
   id: string;
   name: string;
-  description?: string;
+  description: string | null;
   genre: string;
   startDate: string;
   visibility: ProjectVisibility;
-  createdAt?: string;
-  updatedAt?: string;
-  // These fields may be included in API responses
-  progress?: number;
-  status?: string;
+  status: string;
+  ownerId: string;
+  owner?: { id: string; email: string };
+  createdAt: string;
+  updatedAt: string;
   collaborators?: ProjectCollaborator[];
 }
 
 export interface ProjectCollaborator {
   id: string;
-  name: string;
-  avatarUrl?: string;
-  role?: string;
+  projectId: string;
+  userId: string;
+  role: string;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+  user: { id: string; email: string };
+}
+
+export interface ProjectListResponse {
+  projects: Project[];
+  meta: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 export interface CreateProjectPayload {

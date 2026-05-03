@@ -66,18 +66,21 @@ export async function GET(request: NextRequest) {
         const profileData = await profileResponse.json();
         const user = profileData?.data || profileData?.user;
         
-        // Use a combination of the explicit authMode and profile completeness
-        // If they explicitly clicked Signup, or if they are unverified and have no firstName
-        const isExplicitSignup = authMode === 'signup';
-        const isProfileIncomplete = user && (!user.isVerified || !user.firstName);
+        // Determine if onboarding is needed
+        // 1. Explicitly check the backend flag
+        const isAlreadyOnboarded = user?.hasCompletedOnboarding === true;
         
-        // We only force onboarding if it's an explicit signup OR it's a new user without a profile
-        // This ensures returning users (authMode='login') go to dashboard even if they haven't finished a profile detail
-        const shouldShowOnboarding = isExplicitSignup || (authMode !== 'login' && isProfileIncomplete);
+        // 2. Check if profile is missing critical info
+        const isProfileIncomplete = user && (!user.firstName || !user.email);
+        
+        // We show onboarding if:
+        // - They haven't completed it yet (backend flag is false)
+        // - OR they explicitly clicked Signup
+        const shouldShowOnboarding = !isAlreadyOnboarded || authMode === 'signup';
         
         console.log('AuthCallback: Profile check:', { 
           email: user?.email, 
-          isVerified: user?.isVerified, 
+          isAlreadyOnboarded,
           authMode,
           shouldShowOnboarding 
         });

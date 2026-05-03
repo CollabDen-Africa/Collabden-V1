@@ -17,7 +17,7 @@ import DatePicker from "@/app/components/ui/DatePicker";
 import Avatar from "@/app/components/ui/Avatar";
 import Button from "@/app/components/ui/Button";
 import { PROJECT_GENRES, MOCK_COLLABORATORS } from "@/lib/mockData";
-import projectService from "@/services/project.service";
+import { useProjects } from "@/hooks/projects/useProjects";
 import { ROUTES } from "@/constants/routes";
 
 export default function CreateProjectPage() {
@@ -36,8 +36,10 @@ export default function CreateProjectPage() {
 
   const [visibility, setVisibility] = useState<"Private" | "Public">("Private");
 
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+
+
+  const { useCreateProject } = useProjects();
+  const createProjectMutation = useCreateProject();
 
   const toggleCollaborator = (name: string) => {
     setSelectedCollabs(prev =>
@@ -68,16 +70,13 @@ export default function CreateProjectPage() {
 
           <form className="flex flex-col gap-8" onSubmit={async (e) => {
             e.preventDefault();
-            setSubmitError(null);
 
             if (!projectName.trim() || !selectedGenre || !selectedDate) {
-              setSubmitError("Please fill in all required fields (name, genre, start date).");
               return;
             }
 
-            setIsSubmitting(true);
             try {
-              await projectService.create({
+              await createProjectMutation.mutateAsync({
                 name: projectName.trim(),
                 description: description.trim() || undefined,
                 genre: selectedGenre,
@@ -85,11 +84,8 @@ export default function CreateProjectPage() {
                 visibility: visibility.toUpperCase() as "PUBLIC" | "PRIVATE",
               });
               router.push(ROUTES.PROJECTS.SUCCESS);
-            } catch (err: unknown) {
-              const message = err instanceof Error ? err.message : "Failed to create project";
-              setSubmitError(message);
-            } finally {
-              setIsSubmitting(false);
+            } catch (err) {
+              console.error("Project creation failed:", err);
             }
           }}>
 
@@ -298,9 +294,9 @@ export default function CreateProjectPage() {
             </div>
 
             {/* Error Message */}
-            {submitError && (
+            {createProjectMutation.error && (
               <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-[16px] text-sm font-medium">
-                {submitError}
+                {createProjectMutation.error instanceof Error ? createProjectMutation.error.message : "Failed to create project"}
               </div>
             )}
 
@@ -317,10 +313,10 @@ export default function CreateProjectPage() {
               <Button
                 type="submit"
                 variant="primary"
-                disabled={isSubmitting}
+                disabled={createProjectMutation.isPending}
                 className="border border-accent-soft-green px-6! py-2! h-auto! text-[14px] font-medium"
               >
-                {isSubmitting ? (
+                {createProjectMutation.isPending ? (
                   <div className="flex items-center gap-2">
                     <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     Creating...

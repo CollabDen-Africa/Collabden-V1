@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { LuBell } from "react-icons/lu";
 import NotificationItem from '../dashboard/NotificationsItem';
 import OnboardingTooltip from './Tooltip';
-import notificationService from '@/services/notification.service';
+import { useNotifications } from '@/hooks/notifications/useNotifications';
 import type { Notification } from '@/types/api.types';
 
 interface NotificationBellProps {
@@ -23,44 +23,22 @@ export default function NotificationBell({
   onSkip
 }: NotificationBellProps) {
 
+  const { useAllNotifications, useMarkOneRead, useMarkAllRead } = useNotifications();
+  const { data: notifications = [], isLoading } = useAllNotifications();
+  const markOneReadMutation = useMarkOneRead();
+  const markAllReadMutation = useMarkAllRead();
+
   const [internalOpen, setInternalOpen] = useState(false);
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const isOpen = isOpenExternally !== undefined ? isOpenExternally : internalOpen;
   const setIsOpen = onToggle || setInternalOpen;
 
-  const unreadCount = notifications.filter(n => !n.isRead).length;
-
-  // Fetch notifications when dropdown opens
-  useEffect(() => {
-    if (isOpen && !hasFetched) {
-      fetchNotifications();
-    }
-  }, [isOpen, hasFetched]);
-
-  const fetchNotifications = async () => {
-    setIsLoading(true);
-    try {
-      const data = await notificationService.getAll();
-      setNotifications(data);
-      setHasFetched(true);
-    } catch (err) {
-      console.error('Failed to fetch notifications:', err);
-      // Fallback: keep empty — mock data can be restored here if needed
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const unreadCount = notifications.filter((n: Notification) => !n.isRead).length;
 
   const handleMarkRead = async (id: string) => {
     try {
-      await notificationService.markOneRead(id);
-      setNotifications(prev =>
-        prev.map(n => n.id === id ? { ...n, isRead: true } : n)
-      );
+      await markOneReadMutation.mutateAsync(id);
     } catch (err) {
       console.error('Failed to mark notification as read:', err);
     }
@@ -68,8 +46,7 @@ export default function NotificationBell({
 
   const handleMarkAllRead = async () => {
     try {
-      await notificationService.markAllRead();
-      setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+      await markAllReadMutation.mutateAsync();
     } catch (err) {
       console.error('Failed to mark all as read:', err);
     }

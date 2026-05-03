@@ -5,32 +5,23 @@ import Link from 'next/link';
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import { HugeiconsIcon } from '@hugeicons/react';
 import { SquareUnlock02Icon } from '@hugeicons/core-free-icons';
-import authService from '@/services/auth.service';
+import { useForgotPassword } from '@/hooks/auth/useForgotPassword';
 import { ROUTES } from '@/constants/routes';
 import { useRouter } from 'next/navigation';
 
 export default function ForgotPasswordPage() {
     const [email, setEmail] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState('');
     const router = useRouter();
+    const forgotPasswordMutation = useForgotPassword();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
-        setError('');
         
         try {
-            await authService.forgotPassword(email);
+            await forgotPasswordMutation.mutateAsync(email);
             router.push(`${ROUTES.AUTH.PASSWORD_RESET}?email=${encodeURIComponent(email)}`);
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message || "Failed to send reset link. Please try again.");
-            } else {
-                setError("Failed to send reset link. Please try again.");
-            }
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            console.error("Forgot password failed:", err);
         }
     };
 
@@ -67,9 +58,9 @@ export default function ForgotPasswordPage() {
                     </p>
                 </div>
 
-                {error && (
+                {forgotPasswordMutation.error && (
                     <div className="bg-red-500/20 border border-red-500/50 text-white px-4 py-3 rounded-xl text-sm font-medium text-center">
-                        {error}
+                        {forgotPasswordMutation.error instanceof Error ? forgotPasswordMutation.error.message : "Failed to send reset link. Please try again."}
                     </div>
                 )}
 
@@ -85,7 +76,7 @@ export default function ForgotPasswordPage() {
                             id="email"
                             type="email"
                             required
-                            disabled={isLoading}
+                            disabled={forgotPasswordMutation.isPending}
                             placeholder="Johndoe@example.com"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -96,10 +87,10 @@ export default function ForgotPasswordPage() {
                     {/* Primary Button */}
                     <button 
                         type="submit"
-                        disabled={isLoading || !email}
+                        disabled={forgotPasswordMutation.isPending || !email}
                         className="w-full h-[52px] flex justify-center items-center px-[24px] bg-[#73BF44] hover:bg-[#62a538] transition-colors rounded-[24px] text-[#F8F8F8] text-[18px] leading-[20px] font-semibold font-raleway shadow-lg disabled:opacity-50"
                     >
-                        {isLoading ? (
+                        {forgotPasswordMutation.isPending ? (
                             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                         ) : (
                             "Continue"

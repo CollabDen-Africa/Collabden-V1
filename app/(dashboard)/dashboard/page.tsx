@@ -43,20 +43,25 @@ export default function DashboardPage() {
   }, [apiData?.stats]);
 
   const activeProjects = useMemo(() => {
-    if (!apiData?.activeProjects?.length) return MOCK_ACTIVE_PROJECTS;
-    return apiData.activeProjects.map((p, i) => ({
-      id: i + 1,
-      title: p.name,
-      genre: p.genre || "Unknown",
-      tracks: `${p.progress || 0}% complete`,
-      collaborators: (p.collaborators || []).map(c => ({
-        name: c.name,
-        avatarUrl: c.avatarUrl || "/avatar.svg",
-      })),
-      progress: p.progress || 0,
-      updated: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : "Recently",
-      status: p.status || "Active",
-    }));
+    if (!apiData?.activeProjects?.length) return MOCK_ACTIVE_PROJECTS.slice(0, 3);
+    
+    // Sort by updatedAt descending and take top 3
+    return [...apiData.activeProjects]
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
+      .slice(0, 3)
+      .map((p, i) => ({
+        id: i + 1,
+        title: p.name,
+        genre: p.genre || "Unknown",
+        tracks: p.description || "No description",
+        collaborators: (p.collaborators || []).map(c => ({
+          name: c.user?.email?.split("@")[0] || "User",
+          avatarUrl: "/mock-profiles/small.png",
+        })),
+        progress: 0,
+        updated: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : "Recently",
+        status: (p.status || "ACTIVE").charAt(0) + (p.status || "ACTIVE").slice(1).toLowerCase(),
+      }));
   }, [apiData?.activeProjects]);
 
   const recentActivity = useMemo(() => {
@@ -85,11 +90,11 @@ export default function DashboardPage() {
     if (!apiData?.suggestedCollaborators?.length) return MOCK_SUGGESTED_COLLABORATORS;
     return apiData.suggestedCollaborators.map((c, i) => ({
       id: i + 1,
-      name: c.name,
+      name: c.user?.email?.split("@")[0] || "User",
       role: c.role || "Collaborator",
       members: 0,
       rating: "5.0",
-      avatarUrl: c.avatarUrl || "/avatar.svg",
+      avatarUrl: "/mock-profiles/small.png",
     }));
   }, [apiData?.suggestedCollaborators]);
 

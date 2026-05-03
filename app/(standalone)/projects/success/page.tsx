@@ -46,10 +46,10 @@ export default function ProjectSuccessPage() {
 
           {/* Primary Action Button */}
           <Link 
-            href="/dashboard" 
+            href="/projects" 
             className="w-full flex items-center justify-center h-[52px] bg-primary-green rounded-[24px] font-sans font-semibold text-[18px] text-[#F8F8F8] shadow-btn-primary hover:shadow-btn-hover hover:brightness-110 transition-all active:scale-[0.98]"
           >
-            Go to Workspace
+            Go to Projects
           </Link>
 
         </div>

@@ -24,6 +24,7 @@ export const useProjects = () => {
     mutationFn: (data: CreateProjectPayload) => projectService.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
     onError: (error) => handleApiError(error),
   });

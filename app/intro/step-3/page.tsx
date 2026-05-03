@@ -1,9 +1,30 @@
 import React from 'react';
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { HiArrowRight } from "react-icons/hi";
 import { ROUTES } from '@/constants/routes';
+import { useUpdateOnboarding } from '@/hooks/auth/useUpdateOnboarding';
 
 export default function IntroSlideThreePage() {
+    const router = useRouter();
+    const updateOnboardingMutation = useUpdateOnboarding();
+
+    const handleComplete = async () => {
+        try {
+            // 1. Notify backend via hook
+            await updateOnboardingMutation.mutateAsync({ hasCompletedOnboarding: true });
+            
+            // 2. Set local flag for UI tours/tooltips
+            localStorage.setItem('collabden_onboarding_complete', 'true');
+            
+            // 3. Navigate to dashboard
+            router.push(ROUTES.DASHBOARD.ROOT);
+        } catch (error) {
+            console.error("Failed to complete onboarding:", error);
+            // Fallback to dashboard anyway to not block the user
+            router.push(ROUTES.DASHBOARD.ROOT);
+        }
+    };
+
     return (
         <main className="relative min-h-screen w-full flex bg-white overflow-hidden font-raleway">
 
@@ -39,17 +60,19 @@ export default function IntroSlideThreePage() {
                     </div>
 
                     {/* Final Button */}
-                    <Link href={ROUTES.DASHBOARD.ROOT}>
-                        <button className="flex flex-row items-center justify-center px-[28px] py-[14px] gap-[10px] bg-[#73BF44] hover:bg-[#62a538] transition-colors rounded-[50px] shadow-[0px_4px_4px_rgba(0,0,0,0.25)] group">
-                            <span className="text-[18px] leading-[21px] font-bold text-white whitespace-nowrap">
-                                Start Exploring
-                            </span>
-                            {/* Circular Arrow Icon Container */}
-                            <div className="w-[28px] h-[28px] bg-white rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
-                                <HiArrowRight className="w-4 h-4 text-[#73BF44]" />
-                            </div>
-                        </button>
-                    </Link>
+                    <button 
+                        onClick={handleComplete}
+                        disabled={updateOnboardingMutation.isPending}
+                        className="flex flex-row items-center justify-center px-[28px] py-[14px] gap-[10px] bg-[#73BF44] hover:bg-[#62a538] disabled:opacity-70 transition-colors rounded-[50px] shadow-[0px_4px_4px_rgba(0,0,0,0.25)] group"
+                    >
+                        <span className="text-[18px] leading-[21px] font-bold text-white whitespace-nowrap">
+                            {updateOnboardingMutation.isPending ? "Finishing..." : "Start Exploring"}
+                        </span>
+                        {/* Circular Arrow Icon Container */}
+                        <div className="w-[28px] h-[28px] bg-white rounded-full flex items-center justify-center group-hover:translate-x-1 transition-transform shrink-0">
+                            <HiArrowRight className="w-4 h-4 text-[#73BF44]" />
+                        </div>
+                    </button>
 
                 </div>
             </div>

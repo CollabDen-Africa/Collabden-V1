@@ -18,7 +18,7 @@ import {
 } from "react-icons/fa";
 import { IoIosChatbubbles } from "react-icons/io";
 import { HiOutlineLogout } from "react-icons/hi";
-import { useLogout } from "@/hooks/auth/useLogout";
+import { useAuth } from "@/context/AuthContext";
 
 export default function DashboardSidebar({
   onClose,
@@ -43,7 +43,7 @@ export default function DashboardSidebar({
   ];
 
   const router = useRouter();
-  const logoutMutation = useLogout();
+  const { logout, isLoading: isAuthLoading } = useAuth();
 
   return (
     <aside className="w-full h-full relative overflow-visible flex flex-col">
@@ -106,7 +106,7 @@ export default function DashboardSidebar({
                     }`}
                 >
                   {isActive && (
-                    <div className="absolute -left-[0.1px] top-1/2 -translate-y-1/2 w-[13px] h-[50px] bg-primary-green rounded-r-[50px]" />
+                    <div className="absolute left-[-0.1px] top-1/2 -translate-y-1/2 w-[13px] h-[50px] bg-primary-green rounded-r-[50px]" />
                   )}
                   <item.icon size={20} className={`${isActive ? "text-primary-green" : "text-foreground group-hover:text-foreground/80"} shrink-0 transition-colors`} />
                   <span className={`text-[16px] ${isActive ? "font-bold text-primary-green" : "font-medium text-foreground"} transition-colors`}>
@@ -147,13 +147,13 @@ export default function DashboardSidebar({
           </div>
 
           <button
-            onClick={() => logoutMutation.mutate()}
-            disabled={logoutMutation.isPending}
+            onClick={logout}
+            disabled={isAuthLoading}
             className="flex items-center gap-[10px] pl-[25px] pr-[20px] h-[52px] w-full text-foreground/60 hover:text-red-400 hover:bg-white/5 transition-colors group"
           >
             <HiOutlineLogout size={20} className="group-hover:text-red-400 shrink-0 transition-colors" />
             <span className="text-[16px] font-medium transition-colors">
-              {logoutMutation.isPending ? 'Logging out...' : 'Logout'}
+              {isAuthLoading ? 'Logging out...' : 'Logout'}
             </span>
           </button>
         </div>
