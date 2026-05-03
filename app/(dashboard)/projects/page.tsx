@@ -1,28 +1,29 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import Button from "../../components/ui/Button"
 import { HiPlus, HiOutlineClock } from "react-icons/hi";
 import { PROJECTS_DATA } from "@/lib/mockData";
-import projectService from "@/services/project.service";
+import { useProjects } from "@/hooks/projects/useProjects";
+import { handleApiError } from "@/lib/error-handler";
 import type { Project } from "@/types/api.types";
 import { ROUTES } from "@/constants/routes";
 
 // Map backend status to UI styling
 const STATUS_STYLES: Record<string, { color: string; bg: string }> = {
-  Active:    { color: "text-[#11EA9B]", bg: "bg-[#11EA9B]/10" },
-  Review:    { color: "text-[#E2C806]", bg: "bg-[#E2C806]/10" },
+  Active: { color: "text-[#11EA9B]", bg: "bg-[#11EA9B]/10" },
+  Review: { color: "text-[#E2C806]", bg: "bg-[#E2C806]/10" },
   Completed: { color: "text-primary-green", bg: "bg-primary-green/10" },
-  Draft:     { color: "text-foreground/60", bg: "bg-foreground/10" },
+  Draft: { color: "text-foreground/60", bg: "bg-foreground/10" },
 };
 
 const PROGRESS_COLORS: Record<string, string> = {
-  Active:    "bg-primary-green",
-  Review:    "bg-[#204F99]",
+  Active: "bg-primary-green",
+  Review: "bg-[#204F99]",
   Completed: "bg-primary-green",
-  Draft:     "bg-foreground/30",
+  Draft: "bg-foreground/30",
 };
 
 // Transform API project to match UI shape
@@ -54,8 +55,8 @@ function mapApiToUI(project: Project): UIProject {
     statusBg: style.bg,
     progressPercent: project.progress || 0,
     progressColor: PROGRESS_COLORS[status] || "bg-primary-green",
-    lastUpdated: project.updatedAt 
-      ? new Date(project.updatedAt).toLocaleDateString() 
+    lastUpdated: project.updatedAt
+      ? new Date(project.updatedAt).toLocaleDateString()
       : "Recently",
     collaborators: (project.collaborators || []).map(c => c.avatarUrl || "/mock-profiles/small.png"),
     totalCollab: (project.collaborators || []).length,
@@ -63,32 +64,20 @@ function mapApiToUI(project: Project): UIProject {
 }
 
 export default function ProjectsPage() {
-  
   const router = useRouter();
-  const [projects, setProjects] = useState<UIProject[]>(PROJECTS_DATA);
-  const [isLoading, setIsLoading] = useState(true);
+  const { useAllProjects } = useProjects();
+  const { data: apiProjects, isLoading, error } = useAllProjects();
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        const data = await projectService.getAll();
-        if (data.length > 0) {
-          setProjects(data.map(mapApiToUI));
-        }
-        // If empty, keep mock data as fallback
-      } catch (err) {
-        console.warn("Projects API unavailable, using mock data:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    fetchProjects();
-  }, []);
-  
+  const projects = apiProjects?.map(mapApiToUI) || PROJECTS_DATA.map((p, i) => ({ ...p, id: `mock-${i}` }));
+
+  if (error) {
+    handleApiError(error);
+  }
+
   return (
     <div className="w-full max-w-[1200px] mx-auto flex flex-col gap-6 md:gap-8 pt-4 pb-10">
-      
+
       {/* Page Title & Action Bar */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
@@ -99,15 +88,15 @@ export default function ProjectsPage() {
             Manage and track all your active sessions
           </p>
         </div>
-        <Button 
-                  variant="primary"
-                  icon={HiPlus}
-                  iconPosition="left"
-                  onClick={() => router.push(ROUTES.PROJECTS.CREATE)}
-                  className="shrink-0 h-[48px] px-6"
-                >
-                  <span className="font-sans font-semibold text-[16px]">New Project</span>
-                </Button>
+        <Button
+          variant="primary"
+          icon={HiPlus}
+          iconPosition="left"
+          onClick={() => router.push(ROUTES.PROJECTS.CREATE)}
+          className="shrink-0 h-[48px] px-6"
+        >
+          <span className="font-sans font-semibold text-[16px]">New Project</span>
+        </Button>
       </div>
 
       {/* Loading State */}
@@ -120,20 +109,20 @@ export default function ProjectsPage() {
       {/* PROJECTS GRID */}
       <div className="flex flex-col gap-6 w-full">
         {projects.map((project) => (
-          
+
           /* Project Card */
-          <div 
-            key={project.id} 
-            className="w-full bg-foreground/10 border border-foreground/10 backdrop-blur-md rounded-[30px] p-6 sm:p-8 flex flex-col gap-6 md:gap-8 hover:bg-foreground/[0.12] transition-colors"
+          <div
+            key={project.id}
+            className="w-full bg-foreground/10 border border-foreground/10 backdrop-blur-md rounded-[30px] p-6 sm:p-8 flex flex-col gap-6 md:gap-8 hover:bg-foreground/12 transition-colors"
           >
-            
+
             {/* Top Half: Icon, Titles, Status, Collaborators */}
             <div className="flex flex-col md:flex-row md:items-start justify-between gap-6">
-              
+
               {/* Left: Info */}
               <div className="flex gap-4 sm:gap-6">
                 <div className="w-[54px] h-[54px] bg-background/50 rounded-[9px] flex items-center justify-center shrink-0 border border-foreground/10">
-                    {/* SVG Audio Lines Icon */}
+                  {/* SVG Audio Lines Icon */}
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground">
                     <path d="M2 10v3" />
                     <path d="M6 6v11" />
@@ -143,7 +132,7 @@ export default function ProjectsPage() {
                     <path d="M22 10v3" />
                   </svg>
                 </div>
-                
+
                 <div className="flex flex-col gap-2">
                   <h2 className="font-sans font-semibold text-[20px] text-foreground leading-tight">
                     {project.title}
@@ -158,7 +147,7 @@ export default function ProjectsPage() {
 
               {/* Right: Collaborators & Status Pill */}
               <div className="flex flex-row-reverse md:flex-row items-center justify-between md:justify-end gap-6 w-full md:w-auto">
-                
+
                 {/* Collaborator Stack */}
                 <div className="flex items-center gap-2">
                   <div className="flex items-center">
@@ -185,7 +174,7 @@ export default function ProjectsPage() {
 
             {/* Bottom Half: Progress Bar & Actions */}
             <div className="flex flex-col gap-3">
-              
+
               {/* Progress Header */}
               <div className="flex items-center justify-between">
                 <span className="font-sans font-medium text-[14px] text-foreground/60">Progress</span>
@@ -194,7 +183,7 @@ export default function ProjectsPage() {
 
               {/* Progress Bar Track */}
               <div className="w-full h-[8px] bg-foreground/20 rounded-full overflow-hidden">
-                <div 
+                <div
                   className={`h-full rounded-full transition-all duration-1000 ${project.progressColor}`}
                   style={{ width: `${project.progressPercent}%` }}
                 />
@@ -208,14 +197,14 @@ export default function ProjectsPage() {
                     Updated {project.lastUpdated}
                   </span>
                 </div>
-                
-                <button 
+
+                <button
                   onClick={() => router.push(`/projects/${project.id}`)}
                   className="flex items-center gap-2 text-primary-green hover:brightness-110 transition-colors"
                 >
                   <span className="font-sans font-semibold text-[13px] sm:text-[14px]">Open Project</span>
                   <svg width="15" height="12" viewBox="0 0 15 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 6H13M13 6L8 1M13 6L8 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                    <path d="M1 6H13M13 6L8 1M13 6L8 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </button>
               </div>

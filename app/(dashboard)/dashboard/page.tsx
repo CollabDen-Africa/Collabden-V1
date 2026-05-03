@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import TopStatsPanel from '../../components/dashboard/TopStats';
 import ActiveProjectsPanel from '../../components/dashboard/ActiveProjects';
 import SuggestedProjectsPanel from '../../components/dashboard/SuggestedProjects';
 import RecentCollaboratorActivityPanel from '../../components/dashboard/RecentCollaboratorActivity';
 import SuggestedCollaboratorsPanel from '../../components/dashboard/SuggestedCollaborators';
 import OnboardingTooltip from '../../components/ui/Tooltip'; 
-import { TourContext } from '@/context/TourContext';
-import dashboardService from '@/services/dashboard.service';
+import { useTour } from '@/context/TourContext';
+import { useDashboard } from '@/hooks/dashboard/useDashboard';
+import { handleApiError } from '@/lib/error-handler';
 
 // MOCK DATA (fallback)
 import { 
@@ -21,91 +22,83 @@ import {
 
 export default function DashboardPage() {
   // Tour state context
-  const { currentStep, setStep, onSkip } = useContext(TourContext);
+  const { currentStep, setStep, onSkip } = useTour();
 
-  // API data state — falls back to mock data on error
-  const [topStats, setTopStats] = useState(MOCK_TOP_STATS);
-  const [activeProjects, setActiveProjects] = useState(MOCK_ACTIVE_PROJECTS);
-  const [recentActivity, setRecentActivity] = useState(MOCK_RECENT_ACTIVITY);
-  const [suggestedProjects, setSuggestedProjects] = useState(MOCK_SUGGESTED_PROJECTS);
-  const [suggestedCollaborators, setSuggestedCollaborators] = useState(MOCK_SUGGESTED_COLLABORATORS);
-  const [isLoading, setIsLoading] = useState(true);
+  const { useDashboardData } = useDashboard();
+  const { data: apiData, isLoading, error } = useDashboardData();
 
-  useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const data = await dashboardService.getDashboard();
-        
-        // Map API response fields to component props if available
-        if (data.stats && data.stats.length > 0) {
-          setTopStats(data.stats.map(s => ({
-            title: s.title,
-            count: String(s.count),
-            subtitle: s.subtitle,
-            orbClass: "",
-          })));
-        }
-        if (data.activeProjects && data.activeProjects.length > 0) {
-          // Transform backend projects to match the existing component prop shape
-          setActiveProjects(data.activeProjects.map((p, i) => ({
-            id: i + 1,
-            title: p.name,
-            genre: p.genre || "Unknown",
-            tracks: `${p.progress || 0}% complete`,
-            collaborators: (p.collaborators || []).map(c => ({
-              name: c.name,
-              avatarUrl: c.avatarUrl || "/avatar.svg",
-            })),
-            progress: p.progress || 0,
-            updated: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : "Recently",
-            status: p.status || "Active",
-          })));
-        }
-        if (data.recentActivity && data.recentActivity.length > 0) {
-          setRecentActivity(data.recentActivity.map((a, i) => ({
-            id: Number(a.id) || i + 1,
-            user: a.user,
-            action: a.action,
-            time: a.time,
-            avatarUrl: a.avatarUrl || "/avatar.svg",
-          })));
-        }
-        if (data.suggestedProjects && data.suggestedProjects.length > 0) {
-          setSuggestedProjects(data.suggestedProjects.map((p, i) => ({
-            id: i + 1,
-            title: p.name,
-            needs: p.description || "",
-            members: (p.collaborators || []).length,
-            tags: [p.genre],
-          })));
-        }
-        if (data.suggestedCollaborators && data.suggestedCollaborators.length > 0) {
-          setSuggestedCollaborators(data.suggestedCollaborators.map((c, i) => ({
-            id: i + 1,
-            name: c.name,
-            role: c.role || "Collaborator",
-            members: 0,
-            rating: "5.0",
-            avatarUrl: c.avatarUrl || "/avatar.svg",
-          })));
-        }
-      } catch (err) {
-        console.warn('Dashboard API unavailable, using mock data as fallback:', err);
-        // Mock data is already set as initial state — no action needed
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  if (error) {
+    handleApiError(error);
+  }
 
-    fetchDashboard();
-  }, []);
+  // Memoize transformation logic for performance and stable references
+  const topStats = useMemo(() => {
+    if (!apiData?.stats?.length) return MOCK_TOP_STATS;
+    return apiData.stats.map(s => ({
+      title: s.title,
+      count: String(s.count),
+      subtitle: s.subtitle,
+      orbClass: "",
+    }));
+  }, [apiData?.stats]);
+
+  const activeProjects = useMemo(() => {
+    if (!apiData?.activeProjects?.length) return MOCK_ACTIVE_PROJECTS;
+    return apiData.activeProjects.map((p, i) => ({
+      id: i + 1,
+      title: p.name,
+      genre: p.genre || "Unknown",
+      tracks: `${p.progress || 0}% complete`,
+      collaborators: (p.collaborators || []).map(c => ({
+        name: c.name,
+        avatarUrl: c.avatarUrl || "/avatar.svg",
+      })),
+      progress: p.progress || 0,
+      updated: p.updatedAt ? new Date(p.updatedAt).toLocaleDateString() : "Recently",
+      status: p.status || "Active",
+    }));
+  }, [apiData?.activeProjects]);
+
+  const recentActivity = useMemo(() => {
+    if (!apiData?.recentActivity?.length) return MOCK_RECENT_ACTIVITY;
+    return apiData.recentActivity.map((a, i) => ({
+      id: Number(a.id) || i + 1,
+      user: a.user,
+      action: a.action,
+      time: a.time,
+      avatarUrl: a.avatarUrl || "/avatar.svg",
+    }));
+  }, [apiData?.recentActivity]);
+
+  const suggestedProjects = useMemo(() => {
+    if (!apiData?.suggestedProjects?.length) return MOCK_SUGGESTED_PROJECTS;
+    return apiData.suggestedProjects.map((p, i) => ({
+      id: i + 1,
+      title: p.name,
+      needs: p.description || "",
+      members: (p.collaborators || []).length,
+      tags: [p.genre],
+    }));
+  }, [apiData?.suggestedProjects]);
+
+  const suggestedCollaborators = useMemo(() => {
+    if (!apiData?.suggestedCollaborators?.length) return MOCK_SUGGESTED_COLLABORATORS;
+    return apiData.suggestedCollaborators.map((c, i) => ({
+      id: i + 1,
+      name: c.name,
+      role: c.role || "Collaborator",
+      members: 0,
+      rating: "5.0",
+      avatarUrl: c.avatarUrl || "/avatar.svg",
+    }));
+  }, [apiData?.suggestedCollaborators]);
 
   return (
     <div className="w-full flex flex-col gap-[60px] animate-in fade-in duration-500 pt-2">
       
       {/* Loading indicator */}
       {isLoading && (
-        <div className="fixed top-0 left-0 w-full h-[3px] z-[100]">
+        <div className="fixed top-0 left-0 w-full h-[3px] z-100">
           <div className="h-full bg-primary-green animate-pulse rounded-full" style={{ width: '60%' }} />
         </div>
       )}
@@ -118,7 +111,7 @@ export default function DashboardPage() {
 
           {/* STEP 6 TOOLTIP: Final */}
           {currentStep === 6 && (
-            <div className="w-full flex justify-center py-2 relative z-[50]">
+            <div className="w-full flex justify-center py-2 relative z-50">
               <OnboardingTooltip 
                 step={6}
                 title="You're all set!"
@@ -134,7 +127,7 @@ export default function DashboardPage() {
           )}
           
           {/* Active Projects */}
-          <div className={`transition-all duration-300 ${currentStep === 4 ? "relative z-[50]" : "relative z-10"}`}>
+          <div className={`transition-all duration-300 ${currentStep === 4 ? "relative z-50" : "relative z-10"}`}>
             <ActiveProjectsPanel 
               projects={activeProjects} 
               currentStep={currentStep}

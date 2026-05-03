@@ -6,21 +6,27 @@ import { ROUTES } from './constants/routes';
  * Proxy (formerly Middleware) for Next.js 16
  * This handles request interception and routing at the edge.
  */
-export function proxy(request: NextRequest) {
-  
-  // Dev bypass for localhost
-  if (process.env.NODE_ENV === 'development') {
-      return NextResponse.next();
-  }
+export default function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if the route is a dashboard route
-  if (pathname.startsWith(ROUTES.DASHBOARD.ROOT)) {
+  // Protected route prefixes
+  const protectedRoutes = [
+    ROUTES.DASHBOARD.ROOT,
+    ROUTES.PROJECTS.LIST,
+    '/projects', // Catch-all for projects subroutes
+    '/workspace', // Protected workspace
+  ];
+
+  const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
+
+  if (isProtectedRoute) {
     // Check for session token cookie
     const token = request.cookies.get('auth-token');
 
     if (!token) {
       const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
+      // Preserve the intended destination in redirect
+      loginUrl.searchParams.set('callbackUrl', pathname);
       return NextResponse.redirect(loginUrl);
     }
   }

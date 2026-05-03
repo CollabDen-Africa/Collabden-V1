@@ -1,9 +1,9 @@
 # CollabDen Backend API Documentation Reference
 
-Extraction Date: 2026-04-28
+Extraction Date: 2026-05-03
 Source: [Swagger UI](https://collabden-backend.onrender.com/api-docs/#/)
 Base URL: `https://collabden-backend.onrender.com`
-Auth: `Authorization: Bearer <JWT>`
+Auth: `Authorization: Bearer <JWT>` (Handled via HTTP-only cookies in frontend proxy)
 
 ---
 
@@ -14,9 +14,9 @@ Auth: `Authorization: Bearer <JWT>`
 - **Auth Required:** No
 - **Request Body (required):**
   ```json
-  {
+  {     
     "email": "string",       // required
-    "password": "string",    // required
+    "password": "string"     // required
   }
   ```
 - **Responses:**
@@ -131,11 +131,26 @@ Auth: `Authorization: Bearer <JWT>`
   | `200`  | Success — returns user profile object |
   | `401`  | Unauthorized |
 
+### 9. Update Onboarding Status (NEW)
+- **Endpoint:** `PATCH /api/v1/user/onboarding`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "hasCompletedOnboarding": true
+  }
+  ```
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `200`  | Status updated successfully |
+  | `401`  | Unauthorized |
+
 ---
 
-## 📊 Dashboard Endpoints (NEW)
+## 📊 Dashboard Endpoints
 
-### 9. Fetch Dashboard Data
+### 10. Fetch Dashboard Data
 - **Endpoint:** `GET /api/v1/dashboard`
 - **Auth Required:** Yes (`Bearer <token>`)
 - **Description:** Aggregates active projects and recent notifications for the authenticated user.
@@ -145,167 +160,85 @@ Auth: `Authorization: Bearer <JWT>`
   | `200`  | Dashboard data fetched successfully |
   | `401`  | Unauthorized |
 
-> **Note:** The Swagger spec does not document the `200` response shape. The exact response body structure needs to be confirmed with the backend team. Likely returns an object containing `activeProjects[]`, `notifications[]`, and aggregate stats.
-
 ---
 
-## 🔔 Notification Endpoints (NEW)
+## 🔔 Notification Endpoints
 
 ### Notification Schema
 ```json
 {
-  "id": "string",                    // Unique notification ID (e.g. "clx1abc2d0001abcd1234efgh")
-  "userId": "string",                // ID of the user this notification belongs to
-  "title": "string",                 // e.g. "Project Created"
-  "message": "string",               // e.g. "Your project \"My App\" has been created successfully."
-  "type": "NotificationType",        // See enum below
-  "isRead": false,                   // boolean — whether the notification has been read
-  "link": "string | null",           // Optional URL to navigate to (e.g. "/projects/clx1abc...")
-  "createdAt": "ISO 8601 datetime",
-  "updatedAt": "ISO 8601 datetime"
+  "id": "string",
+  "userId": "string",
+  "title": "string",
+  "message": "string",
+  "type": "INVITE" | "SYSTEM" | "PROJECT_CREATED" | "TASK_ASSIGNED" | "MESSAGE",
+  "isRead": boolean,
+  "link": "string | null",
+  "createdAt": "ISO 8601",
+  "updatedAt": "ISO 8601"
 }
 ```
 
-### NotificationType Enum
-```typescript
-type NotificationType =
-  | "INVITE"
-  | "SYSTEM"
-  | "PROJECT_CREATED"
-  | "TASK_ASSIGNED"
-  | "MESSAGE";
-```
-
-### 10. Get All Notifications
+### 11. Get All Notifications
 - **Endpoint:** `GET /api/v1/notifications`
 - **Auth Required:** Yes (`Bearer <token>`)
-- **Description:** Returns all notifications for the currently logged-in user, ordered by most recent first.
-- **Response (200):**
-  ```json
-  [
-    {
-      "id": "clx1abc2d0001abcd1234efgh",
-      "userId": "clx0xyz1a0000abcd5678ijkl",
-      "title": "Project Created",
-      "message": "Your project \"My App\" has been created successfully.",
-      "type": "PROJECT_CREATED",
-      "isRead": false,
-      "link": "/projects/clx1abc2d0001abcd1234efgh",
-      "createdAt": "2026-04-28T10:00:00Z",
-      "updatedAt": "2026-04-28T10:00:00Z"
-    }
-  ]
-  ```
-- **Error Responses:**
-  | Status | Description | Example |
-  |--------|-------------|---------|
-  | `401`  | Unauthorized — missing or invalid token | `{ "message": "No token, unauthorized" }` |
-  | `500`  | Internal server error | `{ "error": "Something went wrong" }` |
+- **Description:** Returns all notifications for the currently logged-in user.
+- **Response (200):** Array of notification objects.
 
-### 11. Mark All Notifications as Read
+### 12. Mark All Notifications as Read
 - **Endpoint:** `PATCH /api/v1/notifications/read-all`
 - **Auth Required:** Yes (`Bearer <token>`)
-- **Description:** Marks all unread notifications for the authenticated user as read.
-- **Response (200):**
-  ```json
-  {
-    "message": "All notifications marked as read"
-  }
-  ```
-- **Error Responses:**
-  | Status | Description | Example |
-  |--------|-------------|---------|
-  | `401`  | Unauthorized — missing or invalid token | `{ "message": "No token, unauthorized" }` |
-  | `500`  | Internal server error | `{ "error": "Something went wrong" }` |
+- **Response (200):** `{ "message": "All notifications marked as read" }`
 
-### 12. Mark Single Notification as Read
+### 13. Mark Single Notification as Read
 - **Endpoint:** `PATCH /api/v1/notifications/{id}/read`
 - **Auth Required:** Yes (`Bearer <token>`)
-- **Path Parameters:**
-  | Param | Type   | Required | Description |
-  |-------|--------|----------|-------------|
-  | `id`  | string | Yes      | The notification ID to mark as read (e.g. `clx1abc2d0001abcd1234efgh`) |
-- **Response (200):**
-  ```json
-  {
-    "message": "Notification marked as read",
-    "notification": { /* full Notification object */ }
-  }
-  ```
-- **Error Responses:**
-  | Status | Description | Example |
-  |--------|-------------|---------|
-  | `401`  | Unauthorized — missing or invalid token | `{ "message": "No token, unauthorized" }` |
-  | `500`  | Internal server error | `{ "error": "Something went wrong" }` |
+- **Path Parameters:** `id` (string)
+- **Response (200):** `{ "message": "Notification marked as read", "notification": { ... } }`
 
 ---
 
-## 📁 Project Endpoints (NEW)
+## 📁 Project Endpoints
 
-### Visibility Enum
-```typescript
-type ProjectVisibility = "PUBLIC" | "PRIVATE";
-```
-
-### 13. Create Project
+### 14. Create Project
 - **Endpoint:** `POST /api/v1/projects`
 - **Auth Required:** Yes (`Bearer <token>`)
 - **Request Body (required):**
   ```json
   {
-    "name": "string",           // required
-    "description": "string",    // optional
-    "genre": "string",          // required
-    "startDate": "ISO 8601",    // required (date-time format)
-    "visibility": "PUBLIC"      // optional — enum: "PUBLIC" | "PRIVATE"
+    "name": "string",
+    "description": "string",
+    "genre": "string",
+    "startDate": "ISO 8601",
+    "visibility": "PUBLIC" | "PRIVATE"
   }
   ```
-- **Responses:**
-  | Status | Description |
-  |--------|-------------|
-  | `201`  | Project created successfully |
-  | `400`  | Missing required fields |
 
-### 14. List All User Projects
+### 15. List All User Projects
 - **Endpoint:** `GET /api/v1/projects`
 - **Auth Required:** Yes (`Bearer <token>`)
-- **Description:** List all active projects for the authenticated user.
-- **Responses:**
-  | Status | Description |
-  |--------|-------------|
-  | `200`  | List of projects fetched successfully |
 
-### 15. Get Project Details (Workspace)
+### 16. Get Project Details
 - **Endpoint:** `GET /api/v1/projects/{id}`
 - **Auth Required:** Yes (`Bearer <token>`)
-- **Path Parameters:**
-  | Param | Type   | Required | Description |
-  |-------|--------|----------|-------------|
-  | `id`  | string | Yes      | The project ID |
-- **Responses:**
-  | Status | Description |
-  |--------|-------------|
-  | `200`  | Project details fetched successfully |
-  | `404`  | Project not found |
 
-### 16. Invite Collaborator to Project
+### 17. Update Project (NEW)
+- **Endpoint:** `PATCH /api/v1/projects/{id}`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body:** Partial update of project fields.
+
+### 18. Delete Project (NEW)
+- **Endpoint:** `DELETE /api/v1/projects/{id}`
+- **Auth Required:** Yes (`Bearer <token>`)
+
+### 19. Invite Collaborator
 - **Endpoint:** `POST /api/v1/projects/{id}/invite`
 - **Auth Required:** Yes (`Bearer <token>`)
-- **Path Parameters:**
-  | Param | Type   | Required | Description |
-  |-------|--------|----------|-------------|
-  | `id`  | string | Yes      | The project ID |
-- **Request Body (required):**
-  ```json
-  {
-    "collaboratorId": "string"    // required — user ID of the collaborator
-  }
-  ```
-- **Responses:**
-  | Status | Description |
-  |--------|-------------|
-  | `200`  | Collaborator invited successfully |
-  | `404`  | Project or User not found |
+- **Request Body:** `{ "collaboratorId": "string" }`
+
+### 20. Remove Collaborator (NEW)
+- **Endpoint:** `DELETE /api/v1/projects/{id}/collaborators/{collaboratorId}`
+- **Auth Required:** Yes (`Bearer <token>`)
 
 ---
 
@@ -322,20 +255,15 @@ type ProjectVisibility = "PUBLIC" | "PRIVATE";
 | 6 | `POST` | `/api/v1/user/forgot-password` | No | Auth |
 | 7 | `POST` | `/api/v1/user/reset-password` | No | Auth |
 | 8 | `GET` | `/api/v1/user/profile` | Yes | Auth |
-| 9 | `GET` | `/api/v1/dashboard` | Yes | Dashboard |
-| 10 | `GET` | `/api/v1/notifications` | Yes | Notifications |
-| 11 | `PATCH` | `/api/v1/notifications/read-all` | Yes | Notifications |
-| 12 | `PATCH` | `/api/v1/notifications/{id}/read` | Yes | Notifications |
-| 13 | `POST` | `/api/v1/projects` | Yes | Projects |
-| 14 | `GET` | `/api/v1/projects` | Yes | Projects |
-| 15 | `GET` | `/api/v1/projects/{id}` | Yes | Projects |
-| 16 | `POST` | `/api/v1/projects/{id}/invite` | Yes | Projects |
-
----
-
-## ⚠️ Notable Changes from Previous Extraction
-
-1. **Signup payload updated:** `name` is now a **required** field alongside `email` and `password`.
-2. **8 new endpoints added:** Dashboard (1), Notifications (3), Projects (4).
-3. **Notification schema fully documented** with enum types.
-4. **Project visibility enum** introduced: `PUBLIC` | `PRIVATE`.
+| 9 | `PATCH` | `/api/v1/user/onboarding` | Yes | Auth |
+| 10 | `GET` | `/api/v1/dashboard` | Yes | Dashboard |
+| 11 | `GET` | `/api/v1/notifications` | Yes | Notifications |
+| 12 | `PATCH` | `/api/v1/notifications/read-all` | Yes | Notifications |
+| 13 | `PATCH` | `/api/v1/notifications/{id}/read` | Yes | Notifications |
+| 14 | `POST` | `/api/v1/projects` | Yes | Projects |
+| 15 | `GET` | `/api/v1/projects` | Yes | Projects |
+| 16 | `GET` | `/api/v1/projects/{id}` | Yes | Projects |
+| 17 | `PATCH` | `/api/v1/projects/{id}` | Yes | Projects |
+| 18 | `DELETE` | `/api/v1/projects/{id}` | Yes | Projects |
+| 19 | `POST` | `/api/v1/projects/{id}/invite` | Yes | Projects |
+| 20 | `DELETE` | `/api/v1/projects/{id}/collaborators/{collaboratorId}` | Yes | Projects |

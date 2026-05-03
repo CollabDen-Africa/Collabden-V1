@@ -6,15 +6,9 @@ import WorkspaceSidebar from "@/app/components/workspace/WorkspaceSidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiOutlineChevronDown } from "react-icons/hi";
-
-const SIDEBAR_PROJECTS = [
-  "Urban Beats Vol.2",
-  "Acoustic Sessions",
-  "Acoustic Sessions 2",
-  "Acoustic Sessions 3",
-  "Acoustic Sessions 4",
-  "Acoustic Sessions 6"
-];
+import { useProjects } from "@/hooks/projects/useProjects";
+import { handleApiError } from "@/lib/error-handler";
+import { useMemo, useEffect } from "react";
 
 const TABS = [
   { name: "Overview", path: "/workspace" },
@@ -35,9 +29,26 @@ const MOCK_COLLABORATORS = [
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [activeProject, setActiveProject] = useState("Urban Beats Vol.2");
-  // Dynamic Progress State
-    const [projectProgress, setProjectProgress] = useState(40);
+  const [activeProject, setActiveProject] = useState("");
+  const [projectProgress] = useState(40);
+
+  const { useAllProjects } = useProjects();
+  const { data: apiProjects, error } = useAllProjects();
+
+  const sidebarProjects = useMemo(() => {
+    if (!apiProjects?.length) return ["Urban Beats Vol.2", "Acoustic Sessions"]; // Fallback
+    return apiProjects.map(p => p.name);
+  }, [apiProjects]);
+
+  useEffect(() => {
+    if (sidebarProjects.length > 0 && !activeProject) {
+      setActiveProject(sidebarProjects[0]);
+    }
+  }, [sidebarProjects, activeProject]);
+
+  if (error) {
+    handleApiError(error);
+  }
 
   return (
     <div className="flex min-h-screen w-full relative font-sans text-white overflow-x-hidden">
@@ -46,17 +57,17 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
       {/* 2. MAIN CONTENT AREA */}
       <div className="relative z-10 w-full max-w-[1512px] mx-auto flex flex-col md:flex-row gap-6 p-4 sm:p-6 lg:p-8">
-        
+
         {/* Desktop Sidebar (Hidden on Mobile) */}
-        <WorkspaceSidebar 
-          projects={SIDEBAR_PROJECTS} 
-          activeProject={activeProject} 
-          onSelectProject={setActiveProject} 
+        <WorkspaceSidebar
+          projects={sidebarProjects}
+          activeProject={activeProject}
+          onSelectProject={setActiveProject}
         />
 
         {/* Workspace Flow */}
         <main className="flex-1 flex flex-col w-full max-w-full min-w-0 md:max-w-[1164px]">
-          
+
           {/* Mobile Project Selector */}
           <div className="md:hidden flex flex-col gap-2 mb-4 w-full relative z-20">
             <span className="text-white/60 text-[12px] font-medium uppercase tracking-wider">Current Project</span>
@@ -66,7 +77,7 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                 onChange={(e) => setActiveProject(e.target.value)}
                 className="w-full appearance-none bg-white/10 border border-white/20 rounded-2xl px-4 py-3 text-white font-sans font-semibold text-[16px] outline-none focus:border-primary-green"
               >
-                {SIDEBAR_PROJECTS.map((project) => (
+                {sidebarProjects.map((project) => (
                   <option key={project} value={project} className="bg-[#121A1F] text-white">
                     {project}
                   </option>
@@ -84,28 +95,28 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
 
             {/* Right Side Info */}
             <div className="flex flex-row items-center justify-between xl:justify-end w-full xl:w-auto gap-4 sm:gap-6">
-              
+
               {/* Dynamic Avatars */}
-                            <div className="flex items-center -space-x-4 sm:-space-x-6">
-                              {MOCK_COLLABORATORS.map((member) => (
-                                <div key={member.id} className="relative w-[36px] h-[36px] sm:w-[47px] sm:h-[47px] rounded-full border-[2px] border-primary-green overflow-hidden">
-                                  <Avatar name={member.name} src={member.image} className="w-full h-full" />
-                                </div>
-                              ))}
-                            </div>
-              
-                            {/* Dynamic Progress Bar */}
-                            <div className="flex flex-col items-end gap-1.5 sm:gap-2">
-                              <span className="font-sans font-bold text-[12px] sm:text-[14px] text-white/80">
-                                {projectProgress}% ready
-                              </span>
-                              <div className="w-[120px] sm:w-[159px] h-[7px] bg-[#D9D9D9] rounded-full overflow-hidden">
-                                <div 
-                                  className="h-full bg-primary-green rounded-full transition-all duration-500 ease-out" 
-                                  style={{ width: `${projectProgress}%` }}
-                                />
-                              </div>
-                            </div> 
+              <div className="flex items-center -space-x-4 sm:-space-x-6">
+                {MOCK_COLLABORATORS.map((member) => (
+                  <div key={member.id} className="relative w-[36px] h-[36px] sm:w-[47px] sm:h-[47px] rounded-full border-2 border-primary-green overflow-hidden">
+                    <Avatar name={member.name} src={member.image} className="w-full h-full" />
+                  </div>
+                ))}
+              </div>
+
+              {/* Dynamic Progress Bar */}
+              <div className="flex flex-col items-end gap-1.5 sm:gap-2">
+                <span className="font-sans font-bold text-[12px] sm:text-[14px] text-white/80">
+                  {projectProgress}% ready
+                </span>
+                <div className="w-[120px] sm:w-[159px] h-[7px] bg-[#D9D9D9] rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-primary-green rounded-full transition-all duration-500 ease-out"
+                    style={{ width: `${projectProgress}%` }}
+                  />
+                </div>
+              </div>
 
             </div>
           </header>
@@ -119,11 +130,10 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
                   <Link
                     key={tab.name}
                     href={tab.path}
-                    className={`font-sans font-medium text-[16px] sm:text-[18px] transition-all whitespace-nowrap border-b-[2.5px] pb-2 -mb-[10.5px] ${
-                      isActive 
-                        ? "text-white border-primary-green" 
+                    className={`font-sans font-medium text-[16px] sm:text-[18px] transition-all whitespace-nowrap border-b-[2.5px] pb-2 -mb-[10.5px] ${isActive
+                        ? "text-white border-primary-green"
                         : "text-white/60 hover:text-white border-transparent"
-                    }`}
+                      }`}
                   >
                     {tab.name}
                   </Link>

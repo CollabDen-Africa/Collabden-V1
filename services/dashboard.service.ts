@@ -1,4 +1,4 @@
-import axios from "axios";
+import { localApi } from "@/lib/axios";
 import type { DashboardData, ApiResponse } from "@/types/api.types";
 
 const dashboardService = {
@@ -7,7 +7,7 @@ const dashboardService = {
    * Calls the local proxy which forwards to GET /api/v1/dashboard.
    */
   getDashboard: async (): Promise<DashboardData> => {
-    const response = await axios.get<ApiResponse<DashboardData>>("/api/proxy/dashboard");
+    const response = await localApi.get<ApiResponse<DashboardData>>("/api/proxy/dashboard");
     return response.data.data || response.data as unknown as DashboardData;
   },
 };

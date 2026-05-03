@@ -8,7 +8,7 @@ import { TourContext } from "@/context/TourContext";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   // --- ONBOARDING STATE ---
   const [tourStep, setTourStep] = useState(1);
   const [isTourActive, setIsTourActive] = useState(true);
@@ -16,6 +16,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const completed = localStorage.getItem('collabden_onboarding_complete');
     if (completed) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsTourActive(false);
       setTourStep(0);
     }
@@ -24,25 +25,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const handleSkip = () => {
     setIsTourActive(false);
     setTourStep(0);
-    setIsMobileMenuOpen(false); 
+    setIsMobileMenuOpen(false);
     localStorage.setItem('collabden_onboarding_complete', 'true');
   };
 
-  
+
   // This automatically slides the mobile drawer open/closed based on the tour step
   useEffect(() => {
     if (!isTourActive) return;
 
     if (tourStep === 2 || tourStep === 3) {
-      setIsMobileMenuOpen(true); 
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsMobileMenuOpen(true);
     } else if (tourStep === 4) {
-      setIsMobileMenuOpen(false); 
+      setIsMobileMenuOpen(false);
     }
   }, [tourStep, isTourActive]);
 
   return (
     <div className="flex min-h-screen w-full relative font-sans bg-background text-foreground overflow-x-hidden">
-      
+
       {/* GLOBAL ONBOARDING OVERLAY */}
       {isTourActive && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-in fade-in duration-500 pointer-events-none" />
@@ -58,66 +60,64 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
 
       {/* Desktop Sidebar */}
-      <div className={`hidden lg:block relative shrink-0 pl-[18px] pt-[52px] pb-8 transition-all ${
-        isTourActive && [2, 3].includes(tourStep) ? "z-50" : "z-10"
-      }`}>
+      <div className={`hidden lg:block relative shrink-0 pl-[18px] pt-[52px] pb-8 transition-all ${isTourActive && [2, 3].includes(tourStep) ? "z-50" : "z-10"
+        }`}>
         <div className="sticky top-[52px] h-[788px] w-[209px]">
-           <DashboardSidebar 
-              currentStep={tourStep} 
-              setStep={setTourStep} 
-              onSkip={handleSkip} 
-           />
+          <DashboardSidebar
+            currentStep={tourStep}
+            setStep={setTourStep}
+            onSkip={handleSkip}
+          />
         </div>
       </div>
 
       {/* Mobile Sidebar */}
       {isMobileMenuOpen && (
-        <div 
-          className="fixed inset-0 bg-black/60 z-[60] lg:hidden backdrop-blur-sm transition-opacity"
+        <div
+          className="fixed inset-0 bg-black/60 z-60 lg:hidden backdrop-blur-sm transition-opacity"
           onClick={() => setIsMobileMenuOpen(false)}
         />
       )}
-      <div className={`fixed top-0 left-0 h-full w-[250px] z-[70] p-[18px] transform transition-transform duration-300 ease-in-out lg:hidden ${
-        isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
-      }`}>
-        <DashboardSidebar 
-          onClose={() => setIsMobileMenuOpen(false)} 
-          currentStep={tourStep} 
-          setStep={setTourStep} 
-          onSkip={handleSkip} 
+      <div className={`fixed top-0 left-0 h-full w-[250px] z-70 p-[18px] transform transition-transform duration-300 ease-in-out lg:hidden ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"
+        }`}>
+        <DashboardSidebar
+          onClose={() => setIsMobileMenuOpen(false)}
+          currentStep={tourStep}
+          setStep={setTourStep}
+          onSkip={handleSkip}
         />
       </div>
-      
+
       {/* MAIN CONTENT AREA */}
       <main className="flex-1 flex flex-col relative min-h-screen px-[18px] lg:px-0 lg:pl-[34px] lg:pr-[34px] xl:pr-[60px] w-full">
-        
+
         <div className="lg:hidden flex items-center justify-between pt-[20px] pb-[10px] w-full max-w-[1200px] mx-auto">
           <div className="flex items-center gap-[6px]">
-             <div className="w-[36px] h-[36px] bg-primary-green rounded-[9.47px] flex items-center justify-center shrink-0">
-               <span className="text-white font-bold text-xl leading-none">C</span>
-             </div>
-             <span className="text-white font-bold text-[20px] leading-tight">CollabDen</span>
+            <div className="w-[36px] h-[36px] bg-primary-green rounded-[9.47px] flex items-center justify-center shrink-0">
+              <span className="text-white font-bold text-xl leading-none">C</span>
+            </div>
+            <span className="text-white font-bold text-[20px] leading-tight">CollabDen</span>
           </div>
-          <button 
+          <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className="p-2 bg-white/10 rounded-lg border border-white/10 relative z-[60]"
+            className="p-2 bg-white/10 rounded-lg border border-white/10 relative z-60"
           >
             <HiMenu size={24} className="text-white" />
           </button>
         </div>
 
         <div className="w-full max-w-[1200px] mx-auto pb-[100px]">
-          
+
           {/* HEADER WRAPPER */}
           <div className={`w-full transition-all duration-300 ${isTourActive && tourStep === 1 ? 'relative z-50' : ''}`}>
-            <DashboardHeader 
-              currentStep={tourStep} 
-              setStep={setTourStep} 
-              onSkip={handleSkip} 
+            <DashboardHeader
+              currentStep={tourStep}
+              setStep={setTourStep}
+              onSkip={handleSkip}
               isMobileMenuOpen={isMobileMenuOpen}
             />
           </div>
-          
+
           {/* PAGE CONTENT WRAPPER */}
           <div className="relative transition-all w-full">
             <TourContext.Provider value={{ currentStep: tourStep, setStep: setTourStep, onSkip: handleSkip, isTourActive }}>

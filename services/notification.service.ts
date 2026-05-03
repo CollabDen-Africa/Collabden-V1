@@ -1,4 +1,4 @@
-import axios from "axios";
+import { localApi } from "@/lib/axios";
 import type { Notification, ApiResponse } from "@/types/api.types";
 
 const notificationService = {
@@ -7,7 +7,7 @@ const notificationService = {
    * Returns notifications ordered by most recent first.
    */
   getAll: async (): Promise<Notification[]> => {
-    const response = await axios.get<ApiResponse<Notification[]>>("/api/proxy/notifications");
+    const response = await localApi.get<ApiResponse<Notification[]>>("/api/proxy/notifications");
     // Handle both { data: [...] } and direct array response
     const raw = response.data;
     if (Array.isArray(raw)) return raw;
@@ -19,14 +19,14 @@ const notificationService = {
    * Mark all notifications as read for the authenticated user.
    */
   markAllRead: async (): Promise<void> => {
-    await axios.patch("/api/proxy/notifications/read-all");
+    await localApi.patch("/api/proxy/notifications/read-all");
   },
 
   /**
    * Mark a single notification as read by ID.
    */
   markOneRead: async (id: string): Promise<Notification> => {
-    const response = await axios.patch<ApiResponse<Notification>>(
+    const response = await localApi.patch<ApiResponse<Notification>>(
       `/api/proxy/notifications/${id}/read`
     );
     return response.data.data || response.data as unknown as Notification;

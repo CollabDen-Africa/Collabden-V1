@@ -21,15 +21,12 @@ export interface NotificationItemProps {
 }
 
 // Map backend notification types to icons
-const getIconForType = (type: NotificationType) => {
-  switch (type) {
-    case 'MESSAGE': return FaMessage;
-    case 'INVITE': return FaUserPlus;
-    case 'PROJECT_CREATED': return FaCheck;
-    case 'TASK_ASSIGNED': return FaHandshake;
-    case 'SYSTEM': return FaBell;
-    default: return FaBell;
-  }
+const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
+  'MESSAGE': FaMessage,
+  'INVITE': FaUserPlus,
+  'PROJECT_CREATED': FaCheck,
+  'TASK_ASSIGNED': FaHandshake,
+  'SYSTEM': FaBell,
 };
 
 // Format ISO timestamp to relative time (e.g. "2 hours ago")
@@ -51,7 +48,7 @@ const formatRelativeTime = (isoDate: string): string => {
 export default function NotificationItem({ 
   id, title, message, type, isRead, link, createdAt, onMarkRead 
 }: NotificationItemProps) {
-  const Icon = getIconForType(type);
+  const IconComponent = TYPE_ICONS[type] || FaBell;
 
   const handleClick = () => {
     if (!isRead && onMarkRead) {
@@ -70,7 +67,7 @@ export default function NotificationItem({
       
       {/* Activity Icon Badge */}
       <div className={`w-[32px] h-[32px] rounded-full flex items-center justify-center shrink-0 ${isRead ? 'bg-black/50' : 'bg-primary-green/20'}`}>
-        <Icon className={`w-[12px] h-[12px] ${isRead ? 'text-foreground' : 'text-primary-green'}`} />
+        <IconComponent className={`w-[12px] h-[12px] ${isRead ? 'text-foreground' : 'text-primary-green'}`} />
       </div>
       
       {/* Notification Content */}
@@ -79,7 +76,7 @@ export default function NotificationItem({
           <span className={`font-sans text-[14px] leading-[17px] ${isRead ? 'font-medium text-foreground/70' : 'font-bold text-foreground'}`}>
             {title}
           </span>
-          <span className="font-sans font-normal text-[14px] leading-[17px] text-foreground/60 break-words">
+          <span className="font-sans font-normal text-[14px] leading-[17px] text-foreground/60 wrap-break-word">
             {message}
           </span>
         </div>
