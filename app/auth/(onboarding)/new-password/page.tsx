@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { HugeiconsIcon } from '@hugeicons/react';
 import { SquareLock02Icon } from '@hugeicons/core-free-icons';
-import authService from '@/services/auth.service';
+import { useResetPassword } from '@/hooks/auth/useResetPassword';
 import { ROUTES } from '@/constants/routes';
 
 function NewPasswordForm() {
@@ -13,12 +13,12 @@ function NewPasswordForm() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     
     const router = useRouter();
     const searchParams = useSearchParams();
     const token = searchParams.get('token');
+    const resetPasswordMutation = useResetPassword();
 
     useEffect(() => {
         if (!token) {
@@ -46,17 +46,10 @@ function NewPasswordForm() {
         }
 
         try {
-            setIsLoading(true);
-            await authService.resetPassword({ password, token });
+            await resetPasswordMutation.mutateAsync({ password, token });
             router.push(ROUTES.AUTH.PASSWORD_UPDATED);
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message || "Failed to update password. Link may have expired.");
-            } else {
-                setError("Failed to update password. Link may have expired.");
-            }
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            console.error("Password reset failed:", err);
         }
     };
 
@@ -87,9 +80,9 @@ function NewPasswordForm() {
                         </p>
                     </div>
 
-                    {error && (
+                    {(error || resetPasswordMutation.error) && (
                         <div className="bg-red-500/20 border border-red-500/50 text-white px-4 py-3 rounded-xl text-sm font-medium text-center">
-                            {error}
+                            {error || (resetPasswordMutation.error instanceof Error ? resetPasswordMutation.error.message : "Failed to update password. Link may have expired.")}
                         </div>
                     )}
 
@@ -107,7 +100,7 @@ function NewPasswordForm() {
                                         id="password"
                                         type={showPassword ? "text" : "password"}
                                         required
-                                        disabled={isLoading || !token}
+                                        disabled={resetPasswordMutation.isPending || !token}
                                         placeholder="Enter new password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
@@ -139,7 +132,7 @@ function NewPasswordForm() {
                                     id="confirmPassword"
                                     type={showConfirmPassword ? "text" : "password"}
                                     required
-                                    disabled={isLoading || !token}
+                                    disabled={resetPasswordMutation.isPending || !token}
                                     placeholder="Re-enter new password"
                                     value={confirmPassword}
                                     onChange={(e) => setConfirmPassword(e.target.value)}
@@ -163,10 +156,10 @@ function NewPasswordForm() {
                 <button 
                     type="submit"
                     form="new-password-form"
-                    disabled={isLoading || !token || !password || password !== confirmPassword}
+                    disabled={resetPasswordMutation.isPending || !token || !password || password !== confirmPassword}
                     className="w-full h-[52px] flex justify-center items-center px-[24px] bg-[#73BF44] hover:bg-[#62a538] transition-colors rounded-[24px] text-[#F8F8F8] text-[18px] leading-[20px] font-semibold font-raleway shadow-lg disabled:opacity-50"
                 >
-                    {isLoading ? (
+                    {resetPasswordMutation.isPending ? (
                         <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                     ) : (
                         "Update Password"

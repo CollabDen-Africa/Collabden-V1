@@ -1,13 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
-import { LoginPayload } from '@/services/auth.service';
-import axios from 'axios';
+import authService, { LoginPayload } from '@/services/auth.service';
+import { handleApiError } from '@/lib/error-handler';
 
 export const useLogin = () => {
   return useMutation({
-    mutationFn: async (data: LoginPayload) => {
-      // Calling the absolute API proxy route for secure cookies
-      const response = await axios.post('/api/auth/login', data);
-      return response.data;
-    },
+    mutationFn: (data: LoginPayload) => authService.login(data),
+    onError: (error) => handleApiError(error),
   });
 };
