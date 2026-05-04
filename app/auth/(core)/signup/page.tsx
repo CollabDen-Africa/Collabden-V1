@@ -15,6 +15,15 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   // const [role, setRole] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
+  
+  const isAlreadyExistsError = useMemo(() => {
+    if (!authError) return false;
+    const lowerError = authError.toLowerCase();
+    return lowerError.includes("exist") || 
+           lowerError.includes("already") || 
+           lowerError.includes("registered") ||
+           lowerError.includes("conflict");
+  }, [authError]);
 
   const handleGoogleSignup = () => {
     // Redirect to the same proxy route used for Google login
@@ -57,6 +66,17 @@ export default function SignupPage() {
       {authError && (
         <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl text-sm font-medium animate-in fade-in slide-in-from-top-1">
           {authError}
+          {isAlreadyExistsError && (
+            <div className="mt-2 text-red-600">
+              Already have an account?{" "}
+              <Link
+                href={ROUTES.AUTH.LOGIN}
+                className="text-primary-green font-bold underline hover:no-underline"
+              >
+                Log in here
+              </Link>
+            </div>
+          )}
         </div>
       )}
 
