@@ -4,7 +4,7 @@ import Image from 'next/image';
 export interface AvatarProps {
   name: string;
   src?: string | null;
-  className?: string; 
+  className?: string;
 }
 
 // Generates a consistent background color string based on the user's name
@@ -17,12 +17,12 @@ const getAvatarColor = (name: string): string => {
     'bg-accent-yellow',
     'bg-accent-green-success',
   ];
-  
+
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
     hash = name.charCodeAt(i) + ((hash << 5) - hash);
   }
-  
+
   return colors[Math.abs(hash) % colors.length];
 };
 
@@ -51,7 +51,7 @@ export default function Avatar({ name, src, className = "w-10 h-10" }: AvatarPro
   const initials = getInitials(name);
 
   return (
-    <div 
+    <div
       className={`flex items-center justify-center rounded-full text-primary-white font-bold shrink-0 ${bgColor} ${className}`}
       title={name}
     >

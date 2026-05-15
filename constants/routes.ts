@@ -17,6 +17,12 @@ export const ROUTES = {
     PROFILE: "/dashboard/profile",
     SETUP: "/intro/step-1",
   },
+  PROJECTS: {
+    LIST: "/projects",
+    CREATE: "/projects/new-project",
+    DETAIL: (id: string) => `/projects/${id}`,
+    SUCCESS: "/projects/success",
+  },
 };
 
 export const PUBLIC_ROUTES = [

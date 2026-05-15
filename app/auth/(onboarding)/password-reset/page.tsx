@@ -6,33 +6,24 @@ import { useSearchParams } from 'next/navigation';
 import { HiOutlineArrowLeft } from "react-icons/hi";
 import { HugeiconsIcon } from '@hugeicons/react';
 import { SquareUnlock02Icon } from '@hugeicons/core-free-icons';
-import authService from '@/services/auth.service';
+import { useForgotPassword } from '@/hooks/auth/useForgotPassword';
 import { ROUTES } from '@/constants/routes';
 
 function PasswordResetForm() {
     const searchParams = useSearchParams();
     const email = searchParams.get('email') || '';
-    const [isLoading, setIsLoading] = useState(false);
     const [message, setMessage] = useState('');
-    const [error, setError] = useState('');
+    const forgotPasswordMutation = useForgotPassword();
 
     const handleResend = async () => {
         if (!email) return;
 
         try {
-            setIsLoading(true);
-            setError('');
             setMessage('');
-            await authService.forgotPassword(email);
+            await forgotPasswordMutation.mutateAsync(email);
             setMessage("A new reset link has been sent to your email.");
-        } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message || "Failed to resend link. Please try again.");
-            } else {
-                setError("Failed to resend link. Please try again.");
-            }
-        } finally {
-            setIsLoading(false);
+        } catch (err) {
+            console.error("Resend failed:", err);
         }
     };
 
@@ -68,9 +59,9 @@ function PasswordResetForm() {
                 </div>
             )}
 
-            {error && (
+            {forgotPasswordMutation.error && (
                 <div className="w-full bg-red-500/20 border border-red-500/50 text-white px-4 py-3 rounded-xl text-sm font-medium text-center mb-6">
-                    {error}
+                    {forgotPasswordMutation.error instanceof Error ? forgotPasswordMutation.error.message : "Failed to resend link. Please try again."}
                 </div>
             )}
         
@@ -81,10 +72,10 @@ function PasswordResetForm() {
             <button 
                 type="button"
                 onClick={handleResend}
-                disabled={isLoading || !email}
+                disabled={forgotPasswordMutation.isPending || !email}
                 className="w-full flex justify-center items-center py-4 px-6 bg-[#73BF44] hover:bg-[#62a538] transition-colors rounded-[24px] text-white text-[18px] leading-[20px] font-semibold font-raleway disabled:opacity-50"
             >
-                {isLoading ? (
+                {forgotPasswordMutation.isPending ? (
                     <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                     "Resend Link"

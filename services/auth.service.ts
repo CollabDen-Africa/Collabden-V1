@@ -1,5 +1,4 @@
-import axiosInstance from "@/lib/axios";
-import axios from "axios";
+import axiosInstance, { localApi } from "@/lib/axios";
 import { API_ENDPOINTS } from "@/constants/api-endpoints";
 
 export interface SignupPayload {
@@ -24,28 +23,27 @@ export interface ResetPasswordPayload {
 
 const authService = {
   /**
-   * Register a new user
+   * Register a new user via local API route
    * @param data { email, password }
    */
   signup: async (data: SignupPayload) => {
-    const payload = {
-      email: data.email,
-      password: data.password,
-    };
-
-    const response = await axiosInstance.post(
-      API_ENDPOINTS.AUTH.SIGNUP,
-      payload,
-    );
+    const response = await localApi.post('/api/auth/signup', data);
     return response.data;
   },
 
   /**
-   * Login a user
-   * (Standard login, but we'll use a proxy route for HTTP-only cookies in practice)
+   * Login a user via local API route
    */
   login: async (data: LoginPayload) => {
-    const response = await axiosInstance.post(API_ENDPOINTS.AUTH.LOGIN, data);
+    const response = await localApi.post('/api/auth/login', data);
+    return response.data;
+  },
+
+  /**
+   * Logout a user via local API route
+   */
+  logout: async () => {
+    const response = await localApi.post('/api/auth/logout');
     return response.data;
   },
 
@@ -53,8 +51,7 @@ const authService = {
    * Get current user profile via local proxy
    */
   getProfile: async () => {
-    // Calling local proxy to use HTTP-only cookies
-    const response = await axios.get('/api/auth/profile');
+    const response = await localApi.get('/api/auth/profile');
     return response.data;
   },
 
@@ -65,54 +62,37 @@ const authService = {
     if (!data.email) {
       throw new Error("Email is required for verification.");
     }
-    try {
-      const payload = {
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.AUTH.VERIFY,
+      {
         email: data.email.trim(),
         verificationToken: data.verificationToken,
-      };
-      const response = await axiosInstance.post(
-        API_ENDPOINTS.AUTH.VERIFY,
-        payload,
-      );
-      return response.data;
-    } catch (err: unknown) {
-      let backendMessage = "Verification failed. Please check the code.";
-      if (axios.isAxiosError(err)) {
-        backendMessage = err.response?.data?.message || err.response?.data?.error || backendMessage;
       }
-      throw new Error(backendMessage);
-    }
+    );
+    return response.data;
   },
 
   /**
-     * Resend verification email
-     */
+   * Resend verification email
+   */
   resendVerification: async (email: string) => {
     if (!email) {
       throw new Error("Email is required to resend verification code.");
     }
-    try {
-      const response = await axiosInstance.post(
-        API_ENDPOINTS.AUTH.RESEND_VERIFY,
-        { email: email.trim() },
-      );
-      return response.data;
-    } catch (err: unknown) {
-      let backendMessage = "Failed to resend code.";
-      if (axios.isAxiosError(err)) {
-        backendMessage = err.response?.data?.message || err.response?.data?.error || backendMessage;
-      }
-      throw new Error(backendMessage);
-    }
+    const response = await axiosInstance.post(
+      API_ENDPOINTS.AUTH.RESEND_VERIFY,
+      { email: email.trim() }
+    );
+    return response.data;
   },
 
   /**
- * Request password reset link
- */
+   * Request password reset link
+   */
   forgotPassword: async (email: string) => {
     const response = await axiosInstance.post(
       API_ENDPOINTS.AUTH.FORGOT_PASSWORD,
-      { email },
+      { email }
     );
     return response.data;
   },
@@ -123,8 +103,16 @@ const authService = {
   resetPassword: async (data: ResetPasswordPayload) => {
     const response = await axiosInstance.post(
       API_ENDPOINTS.AUTH.RESET_PASSWORD,
-      data,
+      data
     );
+    return response.data;
+  },
+
+  /**
+   * Update user onboarding status
+   */
+  updateOnboarding: async (data: { hasCompletedOnboarding: boolean }) => {
+    const response = await localApi.patch('/api/proxy/onboarding', data);
     return response.data;
   },
 };

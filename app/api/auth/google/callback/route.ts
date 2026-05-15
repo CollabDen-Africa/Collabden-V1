@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import { ROUTES } from '@/constants/routes';
 
 /**
  * GET /api/auth/google/callback
@@ -8,14 +7,14 @@ import { ROUTES } from '@/constants/routes';
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
-  
+
   console.log('Google Auth Proxy Callback: Redirecting to unified /auth-callback');
-  
+
   // Forward all parameters to the unified handler
   const unifiedCallbackUrl = new URL('/auth-callback', origin);
   searchParams.forEach((value, key) => {
     unifiedCallbackUrl.searchParams.set(key, value);
   });
-  
+
   return NextResponse.redirect(unifiedCallbackUrl.toString());
 }

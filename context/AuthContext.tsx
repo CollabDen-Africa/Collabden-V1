@@ -2,12 +2,12 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
 import authService, { LoginPayload, SignupPayload } from '@/services/auth.service';
 import { ROUTES } from '@/constants/routes';
 import { useLogin } from '@/hooks/auth/useLogin';
 import { useSignup } from '@/hooks/auth/useSignup';
 import { useLogout } from '@/hooks/auth/useLogout';
+import { getErrorMessage } from '@/lib/error-handler';
 
 interface User {
   id: string;
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(true);
   const [manualError, setManualError] = useState<string | null>(null);
-  
+
   const router = useRouter();
 
   // Integrated TanStack Mutations
@@ -98,36 +98,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Compute overall states
   const isLoading = isInitializing || loginMutation.isPending || signupMutation.isPending || logoutMutation.isPending;
-  
-  const getErrorMessage = (err: unknown) => {
-    if (axios.isAxiosError(err)) { 
-      return (
-        err.response?.data?.message || 
-        (err.response?.data as { error?: string })?.error || 
-        err.message
-      );
-    }
-    if (err instanceof Error) {
-      return err.message;
-    }
-    return null;
-  };
 
-  const error = manualError || 
-               getErrorMessage(loginMutation.error) || 
-               getErrorMessage(signupMutation.error) || 
-               null;
+  const error = manualError ||
+    (loginMutation.error ? getErrorMessage(loginMutation.error) : null) ||
+    (signupMutation.error ? getErrorMessage(signupMutation.error) : null) ||
+    null;
 
   return (
-    <AuthContext.Provider value={{ 
-      user, 
-      isAuthenticated, 
-      isLoading, 
-      error, 
-      login, 
-      signup, 
-      logout, 
-      clearError 
+    <AuthContext.Provider value={{
+      user,
+      isAuthenticated,
+      isLoading,
+      error,
+      login,
+      signup,
+      logout,
+      clearError
     }}>
       {children}
     </AuthContext.Provider>

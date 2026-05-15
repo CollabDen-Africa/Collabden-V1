@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  HiOutlineChevronDown, 
-  HiOutlineSearch, 
-  HiOutlineLockClosed, 
-  HiOutlineGlobeAlt, 
+import { useRouter } from "next/navigation";
+import {
+  HiOutlineChevronDown,
+  HiOutlineSearch,
+  HiOutlineLockClosed,
+  HiOutlineGlobeAlt,
   HiCheck,
   HiOutlineUserAdd,
   HiPaperAirplane
@@ -16,11 +17,14 @@ import DatePicker from "@/app/components/ui/DatePicker";
 import Avatar from "@/app/components/ui/Avatar";
 import Button from "@/app/components/ui/Button";
 import { PROJECT_GENRES, MOCK_COLLABORATORS } from "@/lib/mockData";
+import { useProjects } from "@/hooks/projects/useProjects";
+import { ROUTES } from "@/constants/routes";
 
 export default function CreateProjectPage() {
+  const router = useRouter();
   const [projectName, setProjectName] = useState("");
   const [description, setDescription] = useState("");
-  
+
   const [isGenreOpen, setIsGenreOpen] = useState(false);
   const [selectedGenre, setSelectedGenre] = useState("");
 
@@ -32,24 +36,29 @@ export default function CreateProjectPage() {
 
   const [visibility, setVisibility] = useState<"Private" | "Public">("Private");
 
+
+
+  const { useCreateProject } = useProjects();
+  const createProjectMutation = useCreateProject();
+
   const toggleCollaborator = (name: string) => {
-    setSelectedCollabs(prev => 
+    setSelectedCollabs(prev =>
       prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
     );
   };
 
-  const filteredCollabs = MOCK_COLLABORATORS.filter(c => 
+  const filteredCollabs = MOCK_COLLABORATORS.filter(c =>
     c.name.toLowerCase().includes(collaboratorSearch.toLowerCase())
   );
 
   return (
     <div className="w-full min-h-screen flex items-start justify-center pb-20 pt-4 px-4 sm:px-6 lg:px-8">
-      
+
       {/* Main Form Container */}
       <div className="w-full max-w-[1008px] bg-white/10 backdrop-blur-md border border-white/20 rounded-[30px] md:rounded-[50px] p-6 sm:p-10 lg:p-[80px] shadow-2xl relative overflow-visible z-10">
-        
+
         <div className="w-full max-w-[765px] mx-auto flex flex-col gap-8 md:gap-12">
-          
+
           <div className="flex flex-col gap-2">
             <h1 className="font-sans font-semibold text-[28px] md:text-[32px] leading-tight text-white">
               Create New Project
@@ -59,15 +68,34 @@ export default function CreateProjectPage() {
             </p>
           </div>
 
-          <form className="flex flex-col gap-8" onSubmit={(e) => e.preventDefault()}>
-            
+          <form className="flex flex-col gap-8" onSubmit={async (e) => {
+            e.preventDefault();
+
+            if (!projectName.trim() || !selectedGenre || !selectedDate) {
+              return;
+            }
+
+            try {
+              await createProjectMutation.mutateAsync({
+                name: projectName.trim(),
+                description: description.trim() || undefined,
+                genre: selectedGenre,
+                startDate: selectedDate.toISOString(),
+                visibility: visibility.toUpperCase() as "PUBLIC" | "PRIVATE",
+              });
+              router.push(ROUTES.PROJECTS.SUCCESS);
+            } catch (err) {
+              console.error("Project creation failed:", err);
+            }
+          }}>
+
             {/* Project Name */}
             <div className="flex flex-col gap-4">
               <label className="font-sans font-semibold text-[18px] text-white">
                 Project Name
               </label>
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Enter project name"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
@@ -80,7 +108,7 @@ export default function CreateProjectPage() {
               <label className="font-sans font-semibold text-[18px] text-white">
                 Description (optional)
               </label>
-              <textarea 
+              <textarea
                 placeholder="Describe your project..."
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -90,18 +118,17 @@ export default function CreateProjectPage() {
 
             {/* Genre & Start Date Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-              
+
               {/* Genre Dropdown */}
               <div className="flex flex-col gap-4 relative">
                 <label className="font-sans font-medium text-[16px] text-white">
                   Genre / Category
                 </label>
-                <button 
+                <button
                   type="button"
                   onClick={() => setIsGenreOpen(!isGenreOpen)}
-                  className={`w-full h-[52px] bg-white/10 border rounded-[24px] px-6 flex items-center justify-between outline-none transition-all duration-300 ${
-                    isGenreOpen ? "border-primary-green" : "border-white/20 hover:border-primary-green"
-                  }`}
+                  className={`w-full h-[52px] bg-white/10 border rounded-[24px] px-6 flex items-center justify-between outline-none transition-all duration-300 ${isGenreOpen ? "border-primary-green" : "border-white/20 hover:border-primary-green"
+                    }`}
                 >
                   <span className={`font-sans font-medium text-[16px] ${selectedGenre ? 'text-white' : 'text-white/50'}`}>
                     {selectedGenre || "Select genre"}
@@ -117,12 +144,11 @@ export default function CreateProjectPage() {
                         {PROJECT_GENRES.map(genre => {
                           const isSelected = selectedGenre === genre;
                           return (
-                            <div 
+                            <div
                               key={genre}
                               onClick={() => { setSelectedGenre(genre); setIsGenreOpen(false); }}
-                              className={`flex items-center justify-between h-[46px] px-4 rounded-full cursor-pointer transition-colors group ${
-                                isSelected ? "bg-primary-green" : "hover:bg-primary-green"
-                              }`}
+                              className={`flex items-center justify-between h-[46px] px-4 rounded-full cursor-pointer transition-colors group ${isSelected ? "bg-primary-green" : "hover:bg-primary-green"
+                                }`}
                             >
                               <span className="text-white font-medium text-[16px]">{genre}</span>
                               {isSelected && <HiCheck className="text-white" size={20} />}
@@ -140,9 +166,9 @@ export default function CreateProjectPage() {
                 <label className="font-sans font-medium text-[16px] text-white">
                   Start Date
                 </label>
-                <DatePicker 
-                  selectedDate={selectedDate} 
-                  onSelect={setSelectedDate} 
+                <DatePicker
+                  selectedDate={selectedDate}
+                  onSelect={setSelectedDate}
                 />
               </div>
             </div>
@@ -152,11 +178,10 @@ export default function CreateProjectPage() {
               <label className="font-sans font-semibold text-[18px] text-white">
                 Collaborators
               </label>
-              <div className={`w-full h-[50px] bg-white/10 border rounded-full px-6 flex items-center gap-3 relative z-20 transition-all duration-300 ${
-                isCollabOpen ? "border-primary-green" : "border-white/20 hover:border-primary-green"
-              }`}>
+              <div className={`w-full h-[50px] bg-white/10 border rounded-full px-6 flex items-center gap-3 relative z-20 transition-all duration-300 ${isCollabOpen ? "border-primary-green" : "border-white/20 hover:border-primary-green"
+                }`}>
                 <HiOutlineSearch className="text-white/50" size={20} />
-                <input 
+                <input
                   type="text"
                   placeholder="Search collaborators"
                   value={collaboratorSearch}
@@ -173,26 +198,25 @@ export default function CreateProjectPage() {
                     <div className="flex flex-col items-center">
                       {filteredCollabs.map((collab, i) => {
                         const isAdded = selectedCollabs.includes(collab.name);
-                        
+
                         // Connect and Invite button logic
-                        const isConnect = i % 2 !== 0; 
+                        const isConnect = i % 2 !== 0;
                         const actionType = isConnect ? "Connect" : "Invite";
                         const addedText = isConnect ? "Connected" : "Invited";
 
                         return (
-                          <div 
-                            key={i} 
+                          <div
+                            key={i}
                             onClick={() => toggleCollaborator(collab.name)}
-                            className={`flex items-center justify-between w-[98%] h-[46px] px-[14px] py-[10px] rounded-[50px] cursor-pointer transition-colors group ${
-                              isAdded ? "bg-primary-green" : "hover:bg-primary-green"
-                            }`}
+                            className={`flex items-center justify-between w-[98%] h-[46px] px-[14px] py-[10px] rounded-[50px] cursor-pointer transition-colors group ${isAdded ? "bg-primary-green" : "hover:bg-primary-green"
+                              }`}
                           >
                             {/* Avatar & Text */}
                             <div className="flex items-center gap-[8px]">
-                              <Avatar 
-                                name={collab.name} 
-                                src={collab.image} 
-                                className="w-[24px] h-[24px]" 
+                              <Avatar
+                                name={collab.name}
+                                src={collab.image}
+                                className="w-[24px] h-[24px]"
                               />
                               <span className="font-sans font-bold text-[16px] leading-[19px] text-white">
                                 {collab.name}
@@ -200,28 +224,27 @@ export default function CreateProjectPage() {
                             </div>
 
                             {/* Buttons for Invite and Connect */}
-                                                        <Button 
-                                                          type="button"
-                                                          variant="ghost"
-                                                          className={`!w-[88px] !h-[26px] !rounded-[30px] flex items-center justify-center gap-[4px] !px-0 !py-0 transition-colors ${
-                                                            isAdded 
-                                                              ? "bg-white text-primary-green" 
-                                                              : isConnect
-                                                                ? "bg-white text-primary-green shadow-sm hover:brightness-95" 
-                                                                : "bg-white/10 text-white hover:bg-white/20"
-                                                          }`}
-                                                        >
-                                                          {isAdded ? (
-                                                            <HiCheck size={12} className="stroke-[2px]" />
-                                                          ) : isConnect ? (
-                                                            <HiOutlineUserAdd size={14} /> 
-                                                          ) : (
-                                                            <HiPaperAirplane size={12} />
-                                                          )}
-                                                          <span className="font-sans font-medium text-[12px] leading-[24px]">
-                                                            {isAdded ? addedText : actionType}
-                                                          </span>
-                                                        </Button>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className={`w-[88px]! h-[26px]! rounded-[30px]! flex items-center justify-center gap-[4px] px-0! py-0! transition-colors ${isAdded
+                                  ? "bg-white text-primary-green"
+                                  : isConnect
+                                    ? "bg-white text-primary-green shadow-sm hover:brightness-95"
+                                    : "bg-white/10 text-white hover:bg-white/20"
+                                }`}
+                            >
+                              {isAdded ? (
+                                <HiCheck size={12} className="stroke-[2px]" />
+                              ) : isConnect ? (
+                                <HiOutlineUserAdd size={14} />
+                              ) : (
+                                <HiPaperAirplane size={12} />
+                              )}
+                              <span className="font-sans font-medium text-[12px] leading-[24px]">
+                                {isAdded ? addedText : actionType}
+                              </span>
+                            </Button>
                           </div>
                         );
                       })}
@@ -242,26 +265,24 @@ export default function CreateProjectPage() {
                 Visibility
               </label>
               <div className="flex items-center gap-3">
-                <button 
+                <button
                   type="button"
                   onClick={() => setVisibility("Private")}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${
-                    visibility === "Private" 
-                      ? "bg-primary-green/10 border border-primary-green text-white" 
-                      : "bg-white/10 border border-transparent text-white hover:border-primary-green hover:bg-white/[0.15]"
-                  }`}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${visibility === "Private"
+                      ? "bg-primary-green/10 border border-primary-green text-white"
+                      : "bg-white/10 border border-transparent text-white hover:border-primary-green hover:bg-white/15"
+                    }`}
                 >
                   <HiOutlineLockClosed size={16} />
                   Private
                 </button>
-                <button 
+                <button
                   type="button"
                   onClick={() => setVisibility("Public")}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${
-                    visibility === "Public" 
-                      ? "bg-primary-green/10 border border-primary-green text-white" 
-                      : "bg-white/10 border border-transparent text-white hover:border-primary-green hover:bg-white/[0.15]"
-                  }`}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${visibility === "Public"
+                      ? "bg-primary-green/10 border border-primary-green text-white"
+                      : "bg-white/10 border border-transparent text-white hover:border-primary-green hover:bg-white/15"
+                    }`}
                 >
                   <HiOutlineGlobeAlt size={16} />
                   Public
@@ -272,21 +293,37 @@ export default function CreateProjectPage() {
               </span>
             </div>
 
+            {/* Error Message */}
+            {createProjectMutation.error && (
+              <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-[16px] text-sm font-medium">
+                {createProjectMutation.error instanceof Error ? createProjectMutation.error.message : "Failed to create project"}
+              </div>
+            )}
+
             {/* Actions */}
             <div className="flex items-center justify-end gap-4 mt-4 pt-8 border-t border-white/10">
-              <Button 
+              <Button
                 type="button"
                 variant="ghost"
-                className="bg-white/10 hover:bg-white/20 !px-6 !py-2 !h-auto text-[14px] font-medium"
+                className="bg-white/10 hover:bg-white/20 px-6! py-2! h-auto! text-[14px] font-medium"
+                onClick={() => router.back()}
               >
                 Cancel
               </Button>
-              <Button 
+              <Button
                 type="submit"
                 variant="primary"
-                className="border border-accent-soft-green !px-6 !py-2 !h-auto text-[14px] font-medium"
+                disabled={createProjectMutation.isPending}
+                className="border border-accent-soft-green px-6! py-2! h-auto! text-[14px] font-medium"
               >
-                Create project
+                {createProjectMutation.isPending ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating...
+                  </div>
+                ) : (
+                  "Create project"
+                )}
               </Button>
             </div>
 

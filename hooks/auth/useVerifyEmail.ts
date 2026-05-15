@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import authService, { VerifyPayload } from '@/services/auth.service';
+import { handleApiError } from '@/lib/error-handler';
 
 /**
  * Hook for email verification using TanStack Query
@@ -7,9 +8,8 @@ import authService, { VerifyPayload } from '@/services/auth.service';
  */
 export const useVerifyEmail = () => {
   return useMutation({
-    mutationFn: async (data: VerifyPayload) => {
-      return await authService.verifyEmail(data);
-    },
+    mutationFn: (data: VerifyPayload) => authService.verifyEmail(data),
+    onError: (error) => handleApiError(error),
   });
 };
 
@@ -18,8 +18,7 @@ export const useVerifyEmail = () => {
  */
 export const useResendVerification = () => {
   return useMutation({
-    mutationFn: async (email: string) => {
-      return await authService.resendVerification(email);
-    },
+    mutationFn: (email: string) => authService.resendVerification(email),
+    onError: (error) => handleApiError(error),
   });
 };

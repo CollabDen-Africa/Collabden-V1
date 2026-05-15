@@ -13,22 +13,19 @@ export default function SignupPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // const [role, setRole] = useState("");
   const [agreedToTerms, setAgreedToTerms] = useState(false);
-  
+
   const isAlreadyExistsError = useMemo(() => {
     if (!authError) return false;
     const lowerError = authError.toLowerCase();
-    return lowerError.includes("exist") || 
-           lowerError.includes("already") || 
-           lowerError.includes("registered") ||
-           lowerError.includes("conflict");
+    return lowerError.includes("exist") ||
+      lowerError.includes("already") ||
+      lowerError.includes("registered") ||
+      lowerError.includes("conflict");
   }, [authError]);
 
   const handleGoogleSignup = () => {
-    // Redirect to the same proxy route used for Google login
-    // The backend handles both signup and login flows via the same OAuth callback
-    window.location.href = "/api/auth/google";
+    window.location.href = "/api/auth/google?mode=signup";
   };
 
   const isFormValid = useMemo(() => {
