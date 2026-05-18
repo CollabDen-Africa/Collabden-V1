@@ -1,14 +1,18 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import Avatar from "@/app/components/ui/Avatar";
 import WorkspaceSidebar from "@/app/components/workspace/WorkspaceSidebar";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HiOutlineChevronDown } from "react-icons/hi";
+import { FiBell, FiSettings, FiClock } from "react-icons/fi";
+import ActivityPanel from "../components/workspace/ActivityPanel";
+import UpdatesPanel from "../components/workspace/UpdatesPanel";
+import SettingsPanel from "../components/workspace/SettingsPanel";
 import { useProjects } from "@/hooks/projects/useProjects";
 import { handleApiError } from "@/lib/error-handler";
-import { useMemo, useEffect } from "react";
+
 
 const TABS = [
   { name: "Overview", path: "/workspace" },
@@ -16,7 +20,7 @@ const TABS = [
   { name: "Messages", path: "/workspace/messages" },
   { name: "Tasks", path: "/workspace/tasks" },
   { name: "Agreements", path: "/workspace/agreements" },
-  { name: "Activity", path: "/workspace/activity" },
+  { name: "Payment", path: "/workspace/payment" },
 ];
 
 // Mock data for avatars
@@ -29,8 +33,13 @@ const MOCK_COLLABORATORS = [
 
 export default function WorkspaceLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [activeProject, setActiveProject] = useState("");
-  const [projectProgress] = useState(40);
+  const [activeProject, setActiveProject] = useState("Urban Beats Vol.2");
+  // Dynamic Progress State
+  const [projectProgress, setProjectProgress] = useState(40);
+  //Panel States
+  const [isActivityOpen, setIsActivityOpen] = useState(false);
+  const [isUpdatesOpen, setIsUpdatesOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const { useAllProjects } = useProjects();
   const { data: apiProjects, error } = useAllProjects();
@@ -50,12 +59,18 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
     handleApiError(error);
   }
 
+
   return (
     <div className="flex min-h-screen w-full relative font-sans text-white overflow-x-hidden">
-      <div className="fixed inset-0 pointer-events-none z-0 bg-[#444444]">
-      </div>
-
-      {/* 2. MAIN CONTENT AREA */}
+      {/* BACKGROUND GLOW */}
+            <div className="fixed inset-0 pointer-events-none z-0 bg-black">
+              <div className="absolute w-[868px] h-[868px] left-[278px] top-[-156px] bg-primary-blue rounded-full blur-[242.3px] opacity-80" />
+              <div className="absolute w-[868px] h-[868px] left-[652px] top-[896px] bg-primary-blue rounded-full blur-[242.3px] opacity-80" />
+              <div className="absolute w-[868px] h-[868px] left-[-434px] top-[1409px] bg-primary-blue rounded-full blur-[242.3px] opacity-80" />
+              <div className="absolute w-[868px] h-[868px] left-[756px] top-[1843px] bg-primary-blue rounded-full blur-[242.3px] opacity-80" />
+              <div className="absolute inset-0 bg-white/20" />
+            </div>
+      {/* MAIN CONTENT AREA */}
       <div className="relative z-10 w-full max-w-[1512px] mx-auto flex flex-col md:flex-row gap-6 p-4 sm:p-6 lg:p-8">
 
         {/* Desktop Sidebar (Hidden on Mobile) */}
@@ -143,11 +158,76 @@ export default function WorkspaceLayout({ children }: { children: React.ReactNod
           </div>
 
           {/* Page Content */}
-          <div className="w-full">
-            {children}
-          </div>
-
+          <div className="flex items-start gap-6 w-full h-full pb-10">
+                      
+                      <div className="flex-1 min-w-0 w-full h-full">
+                        {children}
+                      </div>
+          
+                      {/* onClose handler */}
+                                  <ActivityPanel 
+                                    isOpen={isActivityOpen} 
+                                    onClose={() => setIsActivityOpen(false)} 
+                                  />
+                                  <UpdatesPanel
+                                    isOpen={isUpdatesOpen}
+                                    onClose={() => setIsUpdatesOpen(false)}
+                                  />
+                                  <SettingsPanel
+                                    isOpen ={isSettingsOpen}
+                                    onClose={() => setIsSettingsOpen(false)}
+                                  />
+                    </div>
         </main>
+
+        {/* Right Toolbar */}
+        <aside className="fixed bottom-0 left-0 w-full h-[80px] bg-[#121A1F]/95 backdrop-blur-md border-t border-white/10 flex flex-row items-center justify-around pb-safe z-[80]
+                                  xl:relative xl:bottom-auto xl:left-auto xl:w-[60px] xl:h-auto xl:bg-transparent xl:border-none xl:flex-col xl:justify-start xl:gap-8 xl:pt-[220px] xl:shrink-0 xl:z-auto">
+
+                 {/* Updates Button */}
+                  <button 
+                    onClick={() => {setIsUpdatesOpen(!isUpdatesOpen);
+                    setIsActivityOpen(false);
+                    setIsSettingsOpen(false);
+                              }}
+                    className={`flex flex-col items-center gap-1.5 xl:gap-2 transition-opacity p-2 ${isUpdatesOpen ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+                           >
+                    <div className={`p-1.5 rounded-full transition-colors ${isUpdatesOpen ? "bg-white/20" : ""}`}>
+                                     <FiBell size={20} className="text-white" />
+                    </div>
+                    <span className="font-sans font-semibold text-[10px] xl:text-[12px] text-white">Updates</span>
+                  </button>
+
+                                {/* Activity Button */}          
+                                  <button 
+                                    onClick={() => {setIsActivityOpen(!isActivityOpen);
+                               setIsUpdatesOpen(false); 
+                                 setIsSettingsOpen(false);
+                                              }}
+                                     className={`flex flex-col items-center gap-1.5 xl:gap-2 transition-opacity p-2 ${isActivityOpen ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+                                            >
+                                      <div className={`p-1.5 rounded-full transition-colors ${isActivityOpen ? "bg-white/20" : ""}`}>
+                                                <FiClock size={20} className="text-white" />
+                                      </div>
+                                      <span className="font-sans font-semibold text-[10px] xl:text-[12px] text-white">Activity</span>
+                                  </button>
+        
+                                  {/* Settings Button */}
+                                            <button 
+                                              onClick={() => {
+                                                setIsSettingsOpen(!isSettingsOpen);
+                                                setIsActivityOpen(false);
+                                                setIsUpdatesOpen(false);
+                                              }}
+                                              className={`flex flex-col items-center gap-1.5 xl:gap-2 transition-opacity p-2 ${isSettingsOpen ? "opacity-100" : "opacity-40 hover:opacity-100"}`}
+                                            >
+                                              <div className={`p-1.5 rounded-full transition-colors ${isSettingsOpen ? "bg-white/20" : ""}`}>
+                                                <FiSettings size={20} className="text-white" />
+                                              </div>
+                                              <span className="font-sans font-semibold text-[10px] xl:text-[12px] text-white">Settings</span>
+                                            </button>
+        
+                </aside>
       </div>
     </div>
   );
