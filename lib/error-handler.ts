@@ -1,4 +1,50 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
+
+/**
+ * Helper to extract error message from API response data object.
+ */
+const extractErrorFromData = (data: any): string | null => {
+  if (!data) return null;
+  if (typeof data === 'string') return data;
+  
+  // 1. Direct message/error checks
+  const directMessage = data.message || data.error;
+  if (directMessage) return directMessage;
+
+  // 2. Nested data message/error checks
+  const nestedMessage = data.data?.message || data.data?.error;
+  if (nestedMessage) return nestedMessage;
+
+  // 3. Array of errors (validation errors, etc.)
+  if (Array.isArray(data.errors) && data.errors.length > 0) {
+    const firstError = data.errors[0];
+    if (typeof firstError === 'string') return firstError;
+    return firstError?.message || firstError?.error || 'Validation error';
+  }
+
+  return null;
+};
+
+/**
+ * Helper to handle axios-specific errors.
+ */
+const getAxiosErrorMessage = (error: AxiosError): string => {
+  const data = error.response?.data;
+  const extracted = extractErrorFromData(data);
+  if (extracted) return extracted;
+
+  // Fallback to axios top-level error message
+  if (error.message === 'Network Error') {
+    return 'Unable to connect to the server. Please check your internet connection.';
+  }
+
+  // Fallback to status text
+  if (error.response?.statusText) {
+    return `Server Error: ${error.response.statusText}`;
+  }
+
+  return error.message || 'An unexpected network error occurred';
+};
 
 /**
  * Standardizes error extraction from API responses.
@@ -6,46 +52,13 @@ import axios from 'axios';
  */
 export const getErrorMessage = (error: unknown): string => {
   if (axios.isAxiosError(error)) {
-    const data = error.response?.data;
-
-    // 1. Check for nested message/error in response data
-    if (data) {
-      if (typeof data === 'string') return data;
-      
-      // Some backends return { message: "..." } or { error: "..." }
-      if (data.message) return data.message;
-      if (data.error) return data.error;
-
-      // Handle cases where data is wrapped: { data: { message: "..." } }
-      if (data.data?.message) return data.data.message;
-      if (data.data?.error) return data.data.error;
-
-      // Handle arrays of errors (common in some APIs)
-      if (Array.isArray(data.errors) && data.errors.length > 0) {
-        const firstError = data.errors[0];
-        return typeof firstError === 'string' ? firstError : firstError.message || firstError.error || 'Validation error';
-      }
-    }
-
-    // 2. Fallback to axios top-level error message
-    if (error.message === 'Network Error') {
-      return 'Unable to connect to the server. Please check your internet connection.';
-    }
-
-    // 3. Fallback to status text
-    if (error.response?.statusText) {
-      return `Server Error: ${error.response.statusText}`;
-    }
-
-    return error.message || 'An unexpected network error occurred';
+    return getAxiosErrorMessage(error);
   }
 
-  // 4. Standard JS Error
   if (error instanceof Error) {
     return error.message;
   }
 
-  // 5. Final Fallback
   return 'An unexpected error occurred';
 };
 

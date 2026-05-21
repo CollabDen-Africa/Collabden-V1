@@ -45,7 +45,7 @@ const projectService = {
    * Update project details.
    */
   update: async (id: string, data: Partial<CreateProjectPayload>): Promise<Project> => {
-    const response = await localApi.patch(`/api/proxy/projects/${id}`, data);
+    const response = await localApi.put(`/api/proxy/projects/${id}`, data);
     const raw = response.data;
     return raw?.project || raw?.data || raw as Project;
   },

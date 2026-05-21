@@ -68,7 +68,7 @@ export async function GET(request: NextRequest) {
         
         // Determine if onboarding is needed
         // 1. Explicitly check the backend flag
-        const isAlreadyOnboarded = user?.hasCompletedOnboarding === true;
+        const isAlreadyOnboarded = user?.onboardingCompleted === true || user?.hasCompletedOnboarding === true;
         
         // 2. Check if profile is missing critical info
         const isProfileIncomplete = user && (!user.firstName || !user.email);

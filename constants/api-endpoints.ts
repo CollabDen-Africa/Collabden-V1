@@ -32,6 +32,14 @@ export const API_ENDPOINTS = {
     REMOVE_COLLABORATOR: (projectId: string, collaboratorId: string) => 
       `${API_BASE_URL}/api/v1/projects/${projectId}/collaborators/${collaboratorId}`,
   },
+  AGREEMENTS: {
+    UPLOAD: (projectId: string) => `${API_BASE_URL}/api/v1/projects/${projectId}/agreements`,
+    LIST: (projectId: string) => `${API_BASE_URL}/api/v1/projects/${projectId}/agreements`,
+    UPDATE: (projectId: string, id: string) => `${API_BASE_URL}/api/v1/projects/${projectId}/agreements/${id}`,
+    STATUS: (projectId: string, id: string) => `${API_BASE_URL}/api/v1/projects/${projectId}/agreements/${id}/status`,
+    SIGN: (projectId: string, id: string) => `${API_BASE_URL}/api/v1/projects/${projectId}/agreements/${id}/sign`,
+    ESIGN: (projectId: string, id: string) => `${API_BASE_URL}/api/v1/projects/${projectId}/agreements/${id}/esign`,
+  },
 };
 
 export interface API_RESPONSE<T = unknown> {

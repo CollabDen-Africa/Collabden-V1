@@ -3,10 +3,10 @@ import type { NextRequest } from 'next/server';
 import { ROUTES } from './constants/routes';
 
 /**
- * Proxy (formerly Middleware) for Next.js 16
+ * Middleware for Next.js 15+
  * This handles request interception and routing at the edge.
  */
-export default function proxy(request: NextRequest) {
+export default function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Protected route prefixes
