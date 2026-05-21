@@ -1,6 +1,9 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createTaskSchema, CreateTaskInput } from "@/lib/validations/task.schema";
 import { FiX, FiChevronDown, FiPlus, FiCheck } from "react-icons/fi";
 import Avatar from "@/app/components/ui/Avatar";
 import DatePicker from "@/app/components/ui/DatePicker";
@@ -22,12 +25,28 @@ interface CreateTaskModalProps {
 }
 
 export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTaskModalProps) {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState<Priority>("Medium");
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [assignees, setAssignees] = useState<typeof AVAILABLE_USERS>([]);
-  
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm<CreateTaskInput>({
+    resolver: zodResolver(createTaskSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      priority: "Medium",
+      selectedDate: new Date(),
+      assignees: [],
+    },
+  });
+
+  const watchedPriority = watch("priority");
+  const watchedDate = watch("selectedDate");
+  const watchedAssignees = watch("assignees") || [];
+
   const [isPriorityOpen, setIsPriorityOpen] = useState(false);
   const [isAssigneeOpen, setIsAssigneeOpen] = useState(false);
   
@@ -51,33 +70,27 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
   if (!isOpen) return null;
 
   const handleToggleAssignee = (user: typeof AVAILABLE_USERS[0]) => {
-    setAssignees((prev) => {
-      const isSelected = prev.some((a) => a.id === user.id);
-      if (isSelected) {
-        return prev.filter((a) => a.id !== user.id);
-      }
-      return [...prev, user];
-    });
+    const current = watchedAssignees;
+    const isSelected = current.some((a) => a.id === user.id);
+    const next = isSelected
+      ? current.filter((a) => a.id !== user.id)
+      : [...current, user];
+    setValue("assignees", next, { shouldValidate: true });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFormSubmit = (data: CreateTaskInput) => {
     onSubmit({
       id: `t-${Date.now()}`,
-      title,
-      description,
-      priority,
-      date: selectedDate ? selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "No Date",
+      title: data.title,
+      description: data.description,
+      priority: data.priority,
+      date: data.selectedDate ? data.selectedDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : "No Date",
       tag: "General",
       status: "todo", 
-      assignees: assignees.map(a => a.avatar) 
+      assignees: watchedAssignees.map(a => a.avatar) 
     });
     
-    // Reset form
-    setTitle("");
-    setDescription("");
-    setPriority("Medium");
-    setAssignees([]);
+    reset();
     onClose();
   };
 
@@ -85,7 +98,10 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div 
         className="absolute inset-0 bg-[#121A1F]/90 backdrop-blur-sm transition-opacity"
-        onClick={onClose}
+        onClick={() => {
+          reset();
+          onClose();
+        }}
       />
 
       {/* Main Modal Frame */}
@@ -93,7 +109,10 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
         
         {/* Close Button */}
               <button 
-                onClick={onClose}
+                onClick={() => {
+                  reset();
+                  onClose();
+                }}
                 className="absolute top-[30px] right-[30px] z-20 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
               >
                 <FiX size={24} />
@@ -106,20 +125,23 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
           Create New Task
         </h2>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-[60px] w-full max-w-[834px] mx-auto">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="flex flex-col gap-[60px] w-full max-w-[834px] mx-auto">
           
           <div className="flex flex-col gap-4">
             <label className="font-sans font-semibold text-[18px] text-white ml-2">
               Task Name
             </label>
             <input 
-              required
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              {...register("title")}
               placeholder="Enter task name"
               className="w-full h-[50px] bg-white/5 border border-white/20 rounded-full px-6 text-white font-sans font-medium text-[16px] outline-none placeholder:text-white/30 focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-all"
             />
+            {errors.title && (
+              <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                {errors.title.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col gap-4">
@@ -128,8 +150,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
             </label>
             <div className="relative w-full">
               <textarea 
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                {...register("description")}
                 placeholder="Describe your project..."
                 className="w-full h-[178px] bg-white/5 border border-white/20 rounded-[24px] p-6 text-white font-sans font-medium text-[16px] outline-none placeholder:text-white/30 focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-all resize-none custom-scrollbar"
               />
@@ -137,6 +158,11 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
                 
               </span>
             </div>
+            {errors.description && (
+              <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                {errors.description.message}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-col md:flex-row items-start gap-8 w-full">
@@ -146,10 +172,15 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
                 Due Date
               </label>
               <DatePicker 
-                              selectedDate={selectedDate}
-                              onSelect={(date) => setSelectedDate(date)} 
-                              className="w-full h-[52px] bg-white/5 border border-white/20 rounded-[24px] px-6 text-white outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-all cursor-pointer"
-                            />
+                selectedDate={watchedDate || null}
+                onSelect={(date) => setValue("selectedDate", date || undefined, { shouldValidate: true })} 
+                className="w-full h-[52px] bg-white/5 border border-white/20 rounded-[24px] px-6 text-white outline-none focus:border-primary-green focus:ring-1 focus:ring-primary-green transition-all cursor-pointer"
+              />
+              {errors.selectedDate && (
+                <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                  {errors.selectedDate.message}
+                </p>
+              )}
             </div>
 
             {/* Custom Priority Dropdown */}
@@ -164,7 +195,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
                   isPriorityOpen ? "border-primary-green ring-1 ring-primary-green" : "border-white/20"
                 }`}
               >
-                <span>{priority || "Select priority"}</span>
+                <span>{watchedPriority || "Select priority"}</span>
                 <FiChevronDown className={`transition-transform duration-200 ${isPriorityOpen ? "rotate-180" : ""}`} size={20} />
               </button>
 
@@ -175,17 +206,22 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
                       key={p}
                       type="button"
                       onClick={() => {
-                        setPriority(p);
+                        setValue("priority", p, { shouldValidate: true });
                         setIsPriorityOpen(false);
                       }}
                       className={`w-full text-left px-4 py-3 rounded-xl transition-colors font-sans font-medium text-[14px] ${
-                        priority === p ? "bg-primary-green text-white" : "text-white hover:bg-white/10"
+                        watchedPriority === p ? "bg-primary-green text-white" : "text-white hover:bg-white/10"
                       }`}
                     >
                       {p}
                     </button>
                   ))}
                 </div>
+              )}
+              {errors.priority && (
+                <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                  {errors.priority.message}
+                </p>
               )}
             </div>
           </div>
@@ -195,7 +231,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
               Assignees
             </label>
             <div className="flex flex-row items-center gap-[16px] flex-wrap">
-              {assignees.map((assignee) => (
+              {watchedAssignees.map((assignee) => (
                 <div 
                   key={assignee.id}
                   className="flex items-center gap-[10px] h-[67px] bg-white/5 border border-primary-green rounded-full px-4 pr-6 shrink-0"
@@ -221,7 +257,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
                 {isAssigneeOpen && (
                   <div className="absolute top-[80px] left-0 w-[240px] bg-[#1A2329] border border-white/20 rounded-2xl p-2 z-50 shadow-2xl backdrop-blur-xl flex flex-col gap-1">
                     {AVAILABLE_USERS.map((user) => {
-                      const isSelected = assignees.some(a => a.id === user.id);
+                      const isSelected = watchedAssignees.some(a => a.id === user.id);
                       return (
                         <button
                           key={user.id}
@@ -250,7 +286,10 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit }: CreateTas
           <div className="flex items-center gap-[12px] mt-[40px]">
             <button 
               type="button"
-              onClick={onClose}
+              onClick={() => {
+                reset();
+                onClose();
+              }}
               className="flex items-center justify-center w-[126px] h-[38px] rounded-full bg-white/10 hover:bg-white/20 transition-colors font-sans font-medium text-[14px] text-white"
             >
               Cancel

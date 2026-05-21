@@ -90,6 +90,7 @@ export default function DashboardPage() {
     if (!apiData?.suggestedCollaborators?.length) return MOCK_SUGGESTED_COLLABORATORS;
     return apiData.suggestedCollaborators.map((c, i) => ({
       id: i + 1,
+      userId: c.userId || c.user?.id,
       name: c.user?.email?.split("@")[0] || "User",
       role: c.role || "Collaborator",
       members: 0,

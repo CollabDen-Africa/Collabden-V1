@@ -3,7 +3,8 @@ import CollaboratorItem from './CollaboratorItem';
 
 // Data structure
 export interface SuggestedCollaborator {
-  id: number;
+  id: string | number;
+  userId?: string;
   name: string;
   role: string;
   members: number;

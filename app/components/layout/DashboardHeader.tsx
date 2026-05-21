@@ -41,7 +41,6 @@ export default function DashboardHeader({
   // Auto-open notification dropdown for Step 5
   useEffect(() => {
     if (currentStep === 5) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsNotifOpen(true);
     } else {
       setIsNotifOpen(false);

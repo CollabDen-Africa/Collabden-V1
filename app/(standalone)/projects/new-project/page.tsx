@@ -2,6 +2,9 @@
 
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { createProjectSchema, CreateProjectInput } from "@/lib/validations/project.schema";
 import {
   HiOutlineChevronDown,
   HiOutlineSearch,
@@ -22,34 +25,63 @@ import { ROUTES } from "@/constants/routes";
 
 export default function CreateProjectPage() {
   const router = useRouter();
-  const [projectName, setProjectName] = useState("");
-  const [description, setDescription] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useForm<CreateProjectInput>({
+    resolver: zodResolver(createProjectSchema),
+    defaultValues: {
+      projectName: "",
+      description: "",
+      selectedGenre: "",
+      selectedDate: undefined,
+      visibility: "PRIVATE",
+      selectedCollabs: [],
+    },
+  });
+
+  const watchedGenre = watch("selectedGenre");
+  const watchedDate = watch("selectedDate");
+  const watchedCollabs = watch("selectedCollabs");
+  const watchedVisibility = watch("visibility");
 
   const [isGenreOpen, setIsGenreOpen] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState("");
-
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-
   const [isCollabOpen, setIsCollabOpen] = useState(false);
   const [collaboratorSearch, setCollaboratorSearch] = useState("");
-  const [selectedCollabs, setSelectedCollabs] = useState<string[]>([]);
-
-  const [visibility, setVisibility] = useState<"Private" | "Public">("Private");
-
-
 
   const { useCreateProject } = useProjects();
   const createProjectMutation = useCreateProject();
 
   const toggleCollaborator = (name: string) => {
-    setSelectedCollabs(prev =>
-      prev.includes(name) ? prev.filter(n => n !== name) : [...prev, name]
-    );
+    const current = watchedCollabs || [];
+    const next = current.includes(name)
+      ? current.filter(n => n !== name)
+      : [...current, name];
+    setValue("selectedCollabs", next, { shouldValidate: true });
   };
 
   const filteredCollabs = MOCK_COLLABORATORS.filter(c =>
     c.name.toLowerCase().includes(collaboratorSearch.toLowerCase())
   );
+
+  const onSubmit = async (data: CreateProjectInput) => {
+    try {
+      await createProjectMutation.mutateAsync({
+        name: data.projectName.trim(),
+        description: data.description?.trim() || undefined,
+        genre: data.selectedGenre,
+        startDate: data.selectedDate.toISOString(),
+        visibility: data.visibility,
+      });
+      router.push(ROUTES.PROJECTS.SUCCESS);
+    } catch (err) {
+      console.error("Project creation failed:", err);
+    }
+  };
 
   return (
     <div className="w-full min-h-screen flex items-start justify-center pb-20 pt-4 px-4 sm:px-6 lg:px-8">
@@ -68,26 +100,7 @@ export default function CreateProjectPage() {
             </p>
           </div>
 
-          <form className="flex flex-col gap-8" onSubmit={async (e) => {
-            e.preventDefault();
-
-            if (!projectName.trim() || !selectedGenre || !selectedDate) {
-              return;
-            }
-
-            try {
-              await createProjectMutation.mutateAsync({
-                name: projectName.trim(),
-                description: description.trim() || undefined,
-                genre: selectedGenre,
-                startDate: selectedDate.toISOString(),
-                visibility: visibility.toUpperCase() as "PUBLIC" | "PRIVATE",
-              });
-              router.push(ROUTES.PROJECTS.SUCCESS);
-            } catch (err) {
-              console.error("Project creation failed:", err);
-            }
-          }}>
+          <form className="flex flex-col gap-8" onSubmit={handleSubmit(onSubmit)}>
 
             {/* Project Name */}
             <div className="flex flex-col gap-4">
@@ -97,10 +110,14 @@ export default function CreateProjectPage() {
               <input
                 type="text"
                 placeholder="Enter project name"
-                value={projectName}
-                onChange={(e) => setProjectName(e.target.value)}
+                {...register("projectName")}
                 className="w-full h-[50px] bg-white/10 border-2 border-transparent hover:border-primary-green focus:border-primary-green rounded-full px-6 font-sans font-medium text-[16px] text-white placeholder-white/50 outline-none transition-all duration-300"
               />
+              {errors.projectName && (
+                <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                  {errors.projectName.message}
+                </p>
+              )}
             </div>
 
             {/* Description */}
@@ -110,10 +127,14 @@ export default function CreateProjectPage() {
               </label>
               <textarea
                 placeholder="Describe your project..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                {...register("description")}
                 className="w-full h-[178px] bg-white/10 border border-white/20 hover:border-primary-green focus:border-primary-green rounded-[24px] p-6 font-sans font-medium text-[16px] text-white placeholder-white/50 resize-none outline-none transition-all duration-300"
               />
+              {errors.description && (
+                <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                  {errors.description.message}
+                </p>
+              )}
             </div>
 
             {/* Genre & Start Date Grid */}
@@ -130,8 +151,8 @@ export default function CreateProjectPage() {
                   className={`w-full h-[52px] bg-white/10 border rounded-[24px] px-6 flex items-center justify-between outline-none transition-all duration-300 ${isGenreOpen ? "border-primary-green" : "border-white/20 hover:border-primary-green"
                     }`}
                 >
-                  <span className={`font-sans font-medium text-[16px] ${selectedGenre ? 'text-white' : 'text-white/50'}`}>
-                    {selectedGenre || "Select genre"}
+                  <span className={`font-sans font-medium text-[16px] ${watchedGenre ? 'text-white' : 'text-white/50'}`}>
+                    {watchedGenre || "Select genre"}
                   </span>
                   <HiOutlineChevronDown className="text-white/50" size={20} />
                 </button>
@@ -142,11 +163,14 @@ export default function CreateProjectPage() {
                     <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white/20 backdrop-blur-2xl border border-white/30 rounded-[20px] p-2 shadow-2xl z-50 max-h-[250px] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-200">
                       <div className="flex flex-col gap-1">
                         {PROJECT_GENRES.map(genre => {
-                          const isSelected = selectedGenre === genre;
+                          const isSelected = watchedGenre === genre;
                           return (
                             <div
                               key={genre}
-                              onClick={() => { setSelectedGenre(genre); setIsGenreOpen(false); }}
+                              onClick={() => {
+                                setValue("selectedGenre", genre, { shouldValidate: true });
+                                setIsGenreOpen(false);
+                              }}
                               className={`flex items-center justify-between h-[46px] px-4 rounded-full cursor-pointer transition-colors group ${isSelected ? "bg-primary-green" : "hover:bg-primary-green"
                                 }`}
                             >
@@ -159,6 +183,11 @@ export default function CreateProjectPage() {
                     </div>
                   </>
                 )}
+                {errors.selectedGenre && (
+                  <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                    {errors.selectedGenre.message}
+                  </p>
+                )}
               </div>
 
               {/* Start Date */}
@@ -167,9 +196,14 @@ export default function CreateProjectPage() {
                   Start Date
                 </label>
                 <DatePicker
-                  selectedDate={selectedDate}
-                  onSelect={setSelectedDate}
+                  selectedDate={watchedDate || null}
+                  onSelect={(date) => setValue("selectedDate", date || undefined, { shouldValidate: true })}
                 />
+                {errors.selectedDate && (
+                  <p className="text-xs text-red-400 font-medium pl-4 mt-0.5">
+                    {errors.selectedDate.message}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -197,7 +231,7 @@ export default function CreateProjectPage() {
                   <div className="absolute top-[calc(100%+8px)] left-0 w-full bg-white/20 backdrop-blur-2xl border border-white rounded-[20px] py-[4px] shadow-[0px_12px_16px_-4px_rgba(10,13,18,0.08),0px_4px_6px_-2px_rgba(10,13,18,0.03)] z-30 max-h-[320px] overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 duration-200">
                     <div className="flex flex-col items-center">
                       {filteredCollabs.map((collab, i) => {
-                        const isAdded = selectedCollabs.includes(collab.name);
+                        const isAdded = watchedCollabs.includes(collab.name);
 
                         // Connect and Invite button logic
                         const isConnect = i % 2 !== 0;
@@ -267,8 +301,8 @@ export default function CreateProjectPage() {
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => setVisibility("Private")}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${visibility === "Private"
+                  onClick={() => setValue("visibility", "PRIVATE", { shouldValidate: true })}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${watchedVisibility === "PRIVATE"
                       ? "bg-primary-green/10 border border-primary-green text-white"
                       : "bg-white/10 border border-transparent text-white hover:border-primary-green hover:bg-white/15"
                     }`}
@@ -278,8 +312,8 @@ export default function CreateProjectPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setVisibility("Public")}
-                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${visibility === "Public"
+                  onClick={() => setValue("visibility", "PUBLIC", { shouldValidate: true })}
+                  className={`flex items-center gap-2 px-5 py-2 rounded-full font-sans font-medium text-[14px] transition-all duration-300 ${watchedVisibility === "PUBLIC"
                       ? "bg-primary-green/10 border border-primary-green text-white"
                       : "bg-white/10 border border-transparent text-white hover:border-primary-green hover:bg-white/15"
                     }`}

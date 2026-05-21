@@ -16,7 +16,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   useEffect(() => {
     const completed = localStorage.getItem('collabden_onboarding_complete');
     if (completed) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsTourActive(false);
       setTourStep(0);
     }
@@ -35,7 +34,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (!isTourActive) return;
 
     if (tourStep === 2 || tourStep === 3) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsMobileMenuOpen(true);
     } else if (tourStep === 4) {
       setIsMobileMenuOpen(false);
