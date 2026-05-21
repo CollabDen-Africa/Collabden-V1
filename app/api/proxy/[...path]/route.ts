@@ -31,37 +31,68 @@ async function handleRequest(request: NextRequest, { params }: { params: Promise
 
   const headers: Record<string, string> = {
     'Authorization': `Bearer ${token}`,
-    'Content-Type': 'application/json',
   };
 
+  // Preserve the incoming Content-Type header (especially for multipart/form-data boundary parameters)
+  const incomingContentType = request.headers.get('content-type');
+  if (incomingContentType) {
+    headers['Content-Type'] = incomingContentType;
+  }
+
   try {
-    const fetchOptions: RequestInit = {
+    const fetchOptions: RequestInit & { duplex?: string } = {
       method: request.method,
       headers,
       cache: 'no-store',
     };
 
-    // Only include body for non-GET/HEAD requests
+    // Forward the request body for non-GET/HEAD methods
     if (!['GET', 'HEAD'].includes(request.method)) {
-      const body = await request.text();
-      if (body) {
-        fetchOptions.body = body;
+      if (incomingContentType?.includes('multipart/form-data')) {
+        // Stream the body stream directly to keep multipart boundary parameters intact
+        fetchOptions.body = request.body || undefined;
+        fetchOptions.duplex = 'half';
+      } else {
+        const body = await request.text();
+        if (body) {
+          fetchOptions.body = body;
+        }
       }
     }
 
     const response = await fetch(backendUrl.toString(), fetchOptions);
 
-    // Stream the response back
-    const data = await response.json().catch(() => null);
+    const responseContentType = response.headers.get('content-type') || 'application/json';
+    const responseHeaders: Record<string, string> = {
+      'Content-Type': responseContentType,
+    };
 
-    if (!response.ok) {
-      return NextResponse.json(
-        data || { error: `Backend error: ${response.statusText}` },
-        { status: response.status }
-      );
+    if (responseContentType.includes('application/json')) {
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        return NextResponse.json(
+          data || { error: `Backend error: ${response.statusText}` },
+          { status: response.status }
+        );
+      }
+
+      return NextResponse.json(data, { status: response.status });
+    } else {
+      // Non-JSON response (e.g. static files, binary PDFs, streams)
+      if (!response.ok) {
+        return new NextResponse(response.body, {
+          status: response.status,
+          statusText: response.statusText,
+          headers: responseHeaders,
+        });
+      }
+
+      return new NextResponse(response.body, {
+        status: response.status,
+        headers: responseHeaders,
+      });
     }
-
-    return NextResponse.json(data, { status: response.status });
   } catch (error) {
     console.error(`Proxy error [${request.method} /api/v1/${backendPath}]:`, error);
     return NextResponse.json(

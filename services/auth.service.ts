@@ -112,7 +112,9 @@ const authService = {
    * Update user onboarding status
    */
   updateOnboarding: async (data: { hasCompletedOnboarding: boolean }) => {
-    const response = await localApi.patch('/api/proxy/onboarding', data);
+    const response = await localApi.patch('/api/proxy/user/onboarding', {
+      completed: data.hasCompletedOnboarding
+    });
     return response.data;
   },
 };

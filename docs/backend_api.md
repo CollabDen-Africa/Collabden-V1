@@ -242,6 +242,108 @@ Auth: `Authorization: Bearer <JWT>` (Handled via HTTP-only cookies in frontend p
 
 ---
 
+## 📜 Legal Agreements Endpoints
+
+### Legal Agreement Schema
+```json
+{
+  "id": "string",
+  "projectId": "string",
+  "title": "string | null",
+  "content": "string | null",
+  "fileUrl": "string | null",
+  "status": "DRAFT" | "PENDING_SIGNATURE" | "SIGNED",
+  "createdAt": "ISO 8601",
+  "updatedAt": "ISO 8601",
+  "signatures": [
+    {
+      "id": "string",
+      "agreementId": "string",
+      "userId": "string",
+      "legalName": "string",
+      "signedAt": "ISO 8601"
+    }
+  ]
+}
+```
+
+### 21. Upload Draft Agreement
+- **Endpoint:** `POST /api/v1/projects/{projectId}/agreements`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body (Multipart Form):**
+  - `file`: PDF file (required, max 10MB)
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `201`  | Draft agreement uploaded successfully |
+  | `400`  | No file uploaded |
+  | `403`  | Plan limit reached or access denied |
+
+### 22. Get All Agreements for Project
+- **Endpoint:** `GET /api/v1/projects/{projectId}/agreements`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `200`  | Returns an array of agreements for the project |
+
+### 23. Edit/Replace Draft Agreement
+- **Endpoint:** `PUT /api/v1/projects/{projectId}/agreements/{id}`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body (Multipart Form or JSON):**
+  - `file`: PDF file (optional)
+  - `title`: string (optional)
+  - `content`: string (optional)
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `200`  | Agreement updated successfully |
+  | `400`  | Cannot edit a signed agreement |
+  | `403`  | Only project owner can edit |
+
+### 24. Update Agreement Status Manually
+- **Endpoint:** `PATCH /api/v1/projects/{projectId}/agreements/{id}/status`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "status": "PENDING_SIGNATURE" | "SIGNED"
+  }
+  ```
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `200`  | Status updated successfully |
+  | `400`  | Invalid status transition |
+
+### 25. Upload Signed Copy Manually
+- **Endpoint:** `POST /api/v1/projects/{projectId}/agreements/{id}/sign`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body (Multipart Form):**
+  - `file`: Signed PDF copy (required)
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `200`  | Signed agreement uploaded and locked |
+  | `400`  | Agreement already signed |
+
+### 26. Electronically Sign Agreement
+- **Endpoint:** `POST /api/v1/projects/{projectId}/agreements/{id}/esign`
+- **Auth Required:** Yes (`Bearer <token>`)
+- **Request Body:**
+  ```json
+  {
+    "intentToSign": true
+  }
+  ```
+- **Responses:**
+  | Status | Description |
+  |--------|-------------|
+  | `200`  | Agreement e-signed successfully |
+  | `400`  | Missing checkbox intent |
+
+---
+
 ## 📋 Summary of All Endpoints
 
 | # | Method | Endpoint | Auth | Section |
@@ -263,7 +365,13 @@ Auth: `Authorization: Bearer <JWT>` (Handled via HTTP-only cookies in frontend p
 | 14 | `POST` | `/api/v1/projects` | Yes | Projects |
 | 15 | `GET` | `/api/v1/projects` | Yes | Projects |
 | 16 | `GET` | `/api/v1/projects/{id}` | Yes | Projects |
-| 17 | `PATCH` | `/api/v1/projects/{id}` | Yes | Projects |
+| 17 | `PUT` | `/api/v1/projects/{id}` | Yes | Projects |
 | 18 | `DELETE` | `/api/v1/projects/{id}` | Yes | Projects |
 | 19 | `POST` | `/api/v1/projects/{id}/invite` | Yes | Projects |
 | 20 | `DELETE` | `/api/v1/projects/{id}/collaborators/{collaboratorId}` | Yes | Projects |
+| 21 | `POST` | `/api/v1/projects/{projectId}/agreements` | Yes | Agreements |
+| 22 | `GET` | `/api/v1/projects/{projectId}/agreements` | Yes | Agreements |
+| 23 | `PUT` | `/api/v1/projects/{projectId}/agreements/{id}` | Yes | Agreements |
+| 24 | `PATCH` | `/api/v1/projects/{projectId}/agreements/{id}/status` | Yes | Agreements |
+| 25 | `POST` | `/api/v1/projects/{projectId}/agreements/{id}/sign` | Yes | Agreements |
+| 26 | `POST` | `/api/v1/projects/{projectId}/agreements/{id}/esign` | Yes | Agreements |

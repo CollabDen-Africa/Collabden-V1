@@ -8,11 +8,13 @@ import { HiMenu, HiX } from 'react-icons/hi';
 import { motion, AnimatePresence } from 'framer-motion';
 import Button from '../ui/Button';
 import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/context/AuthContext';
 
 const Navbar = () => {
     const [isOpen, setIsOpen] = useState(false);
     const navRef = useRef<HTMLElement>(null);
     const pathname = usePathname();
+    const { isAuthenticated, logout } = useAuth();
 
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
@@ -86,17 +88,36 @@ const Navbar = () => {
 
                 {/* Desktop Actions */}
                 <div className="hidden md:flex items-center gap-6">
-                    <Link
-                        href={ROUTES.AUTH.LOGIN}
-                        className="text-white/90 hover:text-white text-md font-semibold"
-                    >
-                        Log in
-                    </Link>
-                    <Link href={ROUTES.AUTH.SIGNUP}>
-                        <Button variant="primary" size="sm">
-                            Sign Up
-                        </Button>
-                    </Link>
+                    {isAuthenticated ? (
+                        <>
+                            <Link
+                                href={ROUTES.DASHBOARD.ROOT}
+                                className="text-white/90 hover:text-white text-md font-semibold transition-colors"
+                            >
+                                Dashboard
+                            </Link>
+                            <button
+                                onClick={logout}
+                                className="text-white/90 hover:text-red-400 text-md font-semibold transition-colors cursor-pointer bg-transparent border-none p-0"
+                            >
+                                Log out
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <Link
+                                href={ROUTES.AUTH.LOGIN}
+                                className="text-white/90 hover:text-white text-md font-semibold"
+                            >
+                                Log in
+                            </Link>
+                            <Link href={ROUTES.AUTH.SIGNUP}>
+                                <Button variant="primary" size="sm">
+                                    Sign Up
+                                </Button>
+                            </Link>
+                        </>
+                    )}
                 </div>
 
                 {/* Mobile Toggle */}
@@ -136,25 +157,48 @@ const Navbar = () => {
                             })}
 
                             <div className="mt-4 pt-6 border-t border-white/10 flex flex-col gap-4 px-2">
-                                <Link
-                                    href={ROUTES.AUTH.LOGIN}
-                                    className="text-white/90 text-lg font-semibold py-2 text-left"
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    Log in
-                                </Link>
-                                <Link
-                                    href={ROUTES.AUTH.SIGNUP}
-                                    onClick={() => setIsOpen(false)}
-                                >
-                                    <Button
-                                        variant="primary"
-                                        size="md"
-                                        className="w-full"
-                                    >
-                                        Sign Up
-                                    </Button>
-                                </Link>
+                                {isAuthenticated ? (
+                                    <>
+                                        <Link
+                                            href={ROUTES.DASHBOARD.ROOT}
+                                            className="text-white/90 text-lg font-semibold py-2 text-left transition-colors"
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            Dashboard
+                                        </Link>
+                                        <button
+                                            onClick={() => {
+                                                logout();
+                                                setIsOpen(false);
+                                            }}
+                                            className="text-white/90 text-lg font-semibold py-2 text-left hover:text-red-400 transition-colors cursor-pointer bg-transparent border-none p-0"
+                                        >
+                                            Log out
+                                        </button>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Link
+                                            href={ROUTES.AUTH.LOGIN}
+                                            className="text-white/90 text-lg font-semibold py-2 text-left"
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            Log in
+                                        </Link>
+                                        <Link
+                                            href={ROUTES.AUTH.SIGNUP}
+                                            onClick={() => setIsOpen(false)}
+                                        >
+                                            <Button
+                                                variant="primary"
+                                                size="md"
+                                                className="w-full"
+                                            >
+                                                Sign Up
+                                            </Button>
+                                        </Link>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </motion.div>
